@@ -1,382 +1,647 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>生活紀錄 · Aurora Glass</title>
-<style>
-  :root{
-    --bg-1:#f4f0ff;
-    --bg-2:#eafaf5;
-    --ink:#1f2333;
-    --ink-soft:#6b7086;
-    --glass:rgba(255,255,255,0.55);
-    --glass-border:rgba(255,255,255,0.75);
-    --accent-money:#7c6cf0;
-    --accent-food:#ff9a5c;
-    --accent-body:#3ec9b0;
-    --accent-exercise:#5da8ff;
-    --accent-diary:#ff6f9c;
-    --shadow: 0 20px 50px -20px rgba(80,70,140,0.25);
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;
-    color:var(--ink);
-    background:
-      radial-gradient(circle at 10% 10%, #ffffff 0%, transparent 40%),
-      linear-gradient(135deg,var(--bg-1),var(--bg-2));
-    min-height:100vh;
-    overflow-x:hidden;
-    position:relative;
-  }
-  /* floating aurora blobs */
-  .blob{
-    position:fixed;
-    border-radius:50%;
-    filter:blur(60px);
-    opacity:0.55;
-    z-index:0;
-    animation:float 14s ease-in-out infinite;
-  }
-  .blob1{width:420px;height:420px;background:#c9b8ff;top:-120px;left:-100px;animation-delay:0s;}
-  .blob2{width:360px;height:360px;background:#b6f0dd;bottom:-100px;right:-80px;animation-delay:3s;}
-  .blob3{width:280px;height:280px;background:#ffd6e0;top:40%;right:10%;animation-delay:6s;}
-  @keyframes float{
-    0%,100%{transform:translate(0,0) scale(1);}
-    33%{transform:translate(30px,-40px) scale(1.08);}
-    66%{transform:translate(-20px,25px) scale(0.95);}
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>生活紀錄 · Aurora Glass</title>
+    <style>
+      :root {
+        --bg-1: #f4f0ff;
+        --bg-2: #eafaf5;
+        --ink: #1f2333;
+        --ink-soft: #6b7086;
+        --glass: rgba(255, 255, 255, 0.55);
+        --glass-border: rgba(255, 255, 255, 0.75);
+        --accent-money: #7c6cf0;
+        --accent-food: #ff9a5c;
+        --accent-body: #3ec9b0;
+        --accent-exercise: #5da8ff;
+        --accent-diary: #ff6f9c;
+        --shadow: 0 20px 50px -20px rgba(80, 70, 140, 0.25);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          'Noto Sans TC', 'PingFang TC', 'Helvetica Neue', Arial, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 10% 10%, #ffffff 0%, transparent 40%),
+          linear-gradient(135deg, var(--bg-1), var(--bg-2));
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+      }
+      /* floating aurora blobs */
+      .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.55;
+        z-index: 0;
+        animation: float 14s ease-in-out infinite;
+      }
+      .blob1 {
+        width: 420px;
+        height: 420px;
+        background: #c9b8ff;
+        top: -120px;
+        left: -100px;
+        animation-delay: 0s;
+      }
+      .blob2 {
+        width: 360px;
+        height: 360px;
+        background: #b6f0dd;
+        bottom: -100px;
+        right: -80px;
+        animation-delay: 3s;
+      }
+      .blob3 {
+        width: 280px;
+        height: 280px;
+        background: #ffd6e0;
+        top: 40%;
+        right: 10%;
+        animation-delay: 6s;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(30px, -40px) scale(1.08);
+        }
+        66% {
+          transform: translate(-20px, 25px) scale(0.95);
+        }
+      }
 
-  .app{
-    position:relative;
-    z-index:1;
-    max-width:1120px;
-    margin:0 auto;
-    padding:28px 24px 80px;
-  }
+      .app {
+        position: relative;
+        z-index: 1;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 28px 24px 80px;
+      }
 
-  header.topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:28px;
-    opacity:0;
-    animation:fadeDown .6s ease forwards;
-  }
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;}
-  .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent-money),var(--accent-body));box-shadow:0 0 0 6px rgba(124,108,240,0.15);}
-  .greeting{text-align:right;}
-  .greeting .hi{font-size:15px;color:var(--ink-soft);}
-  .greeting .date{font-size:13px;color:var(--ink-soft);}
-  .avatar{
-    width:44px;height:44px;border-radius:50%;
-    background:linear-gradient(135deg,#a78bfa,#60d6c1);
-    display:flex;align-items:center;justify-content:center;
-    color:#fff;font-weight:700;
-    margin-left:14px;
-    box-shadow:var(--shadow);
-  }
-  .topbar-right{display:flex;align-items:center;}
+      header.topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        opacity: 0;
+        animation: fadeDown 0.6s ease forwards;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 20px;
+      }
+      .brand .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--accent-money),
+          var(--accent-body)
+        );
+        box-shadow: 0 0 0 6px rgba(124, 108, 240, 0.15);
+      }
+      .greeting {
+        text-align: right;
+      }
+      .greeting .hi {
+        font-size: 15px;
+        color: var(--ink-soft);
+      }
+      .greeting .date {
+        font-size: 13px;
+        color: var(--ink-soft);
+      }
+      .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a78bfa, #60d6c1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        margin-left: 14px;
+        box-shadow: var(--shadow);
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+      }
 
-  @keyframes fadeDown{
-    from{opacity:0;transform:translateY(-14px);}
-    to{opacity:1;transform:translateY(0);}
-  }
+      @keyframes fadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-  /* Tabs */
-  nav.tabs{
-    position:relative;
-    display:flex;
-    gap:6px;
-    background:var(--glass);
-    backdrop-filter:blur(16px);
-    border:1px solid var(--glass-border);
-    border-radius:18px;
-    padding:6px;
-    margin-bottom:32px;
-    box-shadow:var(--shadow);
-    opacity:0;
-    animation:fadeDown .6s ease .1s forwards;
-    overflow-x:auto;
-  }
-  nav.tabs button{
-    position:relative;
-    z-index:2;
-    border:none;
-    background:transparent;
-    font-family:inherit;
-    font-size:14px;
-    font-weight:600;
-    color:var(--ink-soft);
-    padding:11px 20px;
-    border-radius:14px;
-    cursor:pointer;
-    white-space:nowrap;
-    transition:color .3s ease;
-  }
-  nav.tabs button.active{color:#fff;}
-  .tab-indicator{
-    position:absolute;
-    top:6px; bottom:6px; left:6px;
-    width:100px;
-    border-radius:14px;
-    background:linear-gradient(135deg,var(--accent-money),#9d8cff);
-    box-shadow:0 8px 20px -6px rgba(124,108,240,0.6);
-    transition:transform .45s cubic-bezier(.65,0,.35,1), width .45s cubic-bezier(.65,0,.35,1), background .3s ease;
-    z-index:1;
-  }
+      /* Tabs */
+      nav.tabs {
+        position: relative;
+        display: flex;
+        gap: 6px;
+        background: var(--glass);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 18px;
+        padding: 6px;
+        margin-bottom: 32px;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        animation: fadeDown 0.6s ease 0.1s forwards;
+        overflow-x: auto;
+      }
+      nav.tabs button {
+        position: relative;
+        z-index: 2;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-soft);
+        padding: 11px 20px;
+        border-radius: 14px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.3s ease;
+      }
+      nav.tabs button.active {
+        color: #fff;
+      }
+      .tab-indicator {
+        position: absolute;
+        top: 6px;
+        bottom: 6px;
+        left: 6px;
+        width: 100px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent-money), #9d8cff);
+        box-shadow: 0 8px 20px -6px rgba(124, 108, 240, 0.6);
+        transition:
+          transform 0.45s cubic-bezier(0.65, 0, 0.35, 1),
+          width 0.45s cubic-bezier(0.65, 0, 0.35, 1),
+          background 0.3s ease;
+        z-index: 1;
+      }
 
-  /* Cards grid */
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-    gap:20px;
-  }
-  .card{
-    background:var(--glass);
-    backdrop-filter:blur(16px);
-    border:1px solid var(--glass-border);
-    border-radius:22px;
-    padding:22px;
-    box-shadow:var(--shadow);
-    opacity:0;
-    transform:translateY(24px);
-    animation:cardIn .6s cubic-bezier(.2,.8,.2,1) forwards;
-    transition:transform .35s ease, box-shadow .35s ease;
-    position:relative;
-    overflow:hidden;
-  }
-  .card:hover{transform:translateY(-6px);box-shadow:0 28px 60px -18px rgba(80,70,140,0.35);}
-  .card:nth-child(1){animation-delay:.15s;}
-  .card:nth-child(2){animation-delay:.22s;}
-  .card:nth-child(3){animation-delay:.29s;}
-  .card:nth-child(4){animation-delay:.36s;}
-  .card:nth-child(5){animation-delay:.43s;}
-  .card:nth-child(6){animation-delay:.5s;}
-  @keyframes cardIn{
-    to{opacity:1;transform:translateY(0);}
-  }
-  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-  .card-icon{
-    width:38px;height:38px;border-radius:12px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:18px;
-  }
-  .card-title{font-size:13px;color:var(--ink-soft);font-weight:600;}
-  .card-value{font-size:26px;font-weight:800;margin:2px 0 12px;}
-  .card-value small{font-size:13px;font-weight:600;color:var(--ink-soft);}
+      /* Cards grid */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 20px;
+      }
+      .card {
+        background: var(--glass);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(24px);
+        animation: cardIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        transition:
+          transform 0.35s ease,
+          box-shadow 0.35s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 28px 60px -18px rgba(80, 70, 140, 0.35);
+      }
+      .card:nth-child(1) {
+        animation-delay: 0.15s;
+      }
+      .card:nth-child(2) {
+        animation-delay: 0.22s;
+      }
+      .card:nth-child(3) {
+        animation-delay: 0.29s;
+      }
+      .card:nth-child(4) {
+        animation-delay: 0.36s;
+      }
+      .card:nth-child(5) {
+        animation-delay: 0.43s;
+      }
+      .card:nth-child(6) {
+        animation-delay: 0.5s;
+      }
+      @keyframes cardIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .card-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+      .card-title {
+        font-size: 13px;
+        color: var(--ink-soft);
+        font-weight: 600;
+      }
+      .card-value {
+        font-size: 26px;
+        font-weight: 800;
+        margin: 2px 0 12px;
+      }
+      .card-value small {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink-soft);
+      }
 
-  .bar{height:8px;border-radius:6px;background:rgba(120,120,140,0.12);overflow:hidden;}
-  .bar-fill{height:100%;border-radius:6px;width:0%;transition:width 1.2s cubic-bezier(.2,.8,.2,1);}
+      .bar {
+        height: 8px;
+        border-radius: 6px;
+        background: rgba(120, 120, 140, 0.12);
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 6px;
+        width: 0%;
+        transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
 
-  .money .card-icon{background:rgba(124,108,240,0.15);color:var(--accent-money);}
-  .money .bar-fill{background:linear-gradient(90deg,var(--accent-money),#a99bff);}
-  .food .card-icon{background:rgba(255,154,92,0.18);color:var(--accent-food);}
-  .food .bar-fill{background:linear-gradient(90deg,var(--accent-food),#ffc08a);}
-  .body .card-icon{background:rgba(62,201,176,0.18);color:var(--accent-body);}
-  .body .bar-fill{background:linear-gradient(90deg,var(--accent-body),#7fe6cf);}
-  .exercise .card-icon{background:rgba(93,168,255,0.18);color:var(--accent-exercise);}
-  .exercise .bar-fill{background:linear-gradient(90deg,var(--accent-exercise),#93c9ff);}
-  .diary .card-icon{background:rgba(255,111,156,0.18);color:var(--accent-diary);}
+      .money .card-icon {
+        background: rgba(124, 108, 240, 0.15);
+        color: var(--accent-money);
+      }
+      .money .bar-fill {
+        background: linear-gradient(90deg, var(--accent-money), #a99bff);
+      }
+      .food .card-icon {
+        background: rgba(255, 154, 92, 0.18);
+        color: var(--accent-food);
+      }
+      .food .bar-fill {
+        background: linear-gradient(90deg, var(--accent-food), #ffc08a);
+      }
+      .body .card-icon {
+        background: rgba(62, 201, 176, 0.18);
+        color: var(--accent-body);
+      }
+      .body .bar-fill {
+        background: linear-gradient(90deg, var(--accent-body), #7fe6cf);
+      }
+      .exercise .card-icon {
+        background: rgba(93, 168, 255, 0.18);
+        color: var(--accent-exercise);
+      }
+      .exercise .bar-fill {
+        background: linear-gradient(90deg, var(--accent-exercise), #93c9ff);
+      }
+      .diary .card-icon {
+        background: rgba(255, 111, 156, 0.18);
+        color: var(--accent-diary);
+      }
 
-  .mini-row{display:flex;gap:8px;margin-top:12px;}
-  .macro{flex:1;text-align:center;}
-  .macro .lbl{font-size:11px;color:var(--ink-soft);margin-top:4px;}
+      .mini-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .macro {
+        flex: 1;
+        text-align: center;
+      }
+      .macro .lbl {
+        font-size: 11px;
+        color: var(--ink-soft);
+        margin-top: 4px;
+      }
 
-  /* ring */
-  .ring-wrap{display:flex;align-items:center;gap:16px;}
-  .ring{width:64px;height:64px;transform:rotate(-90deg);}
-  .ring circle{fill:none;stroke-width:7;}
-  .ring .bg{stroke:rgba(93,168,255,0.15);}
-  .ring .fg{stroke:var(--accent-exercise);stroke-linecap:round;stroke-dasharray:170;stroke-dashoffset:170;animation:ringFill 1.4s .5s cubic-bezier(.2,.8,.2,1) forwards;}
-  @keyframes ringFill{to{stroke-dashoffset:48;}}
+      /* ring */
+      .ring-wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .ring {
+        width: 64px;
+        height: 64px;
+        transform: rotate(-90deg);
+      }
+      .ring circle {
+        fill: none;
+        stroke-width: 7;
+      }
+      .ring .bg {
+        stroke: rgba(93, 168, 255, 0.15);
+      }
+      .ring .fg {
+        stroke: var(--accent-exercise);
+        stroke-linecap: round;
+        stroke-dasharray: 170;
+        stroke-dashoffset: 170;
+        animation: ringFill 1.4s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+      @keyframes ringFill {
+        to {
+          stroke-dashoffset: 48;
+        }
+      }
 
-  .diary-quote{
-    font-size:13px;
-    color:var(--ink-soft);
-    line-height:1.6;
-    background:rgba(255,111,156,0.08);
-    border-left:3px solid var(--accent-diary);
-    padding:10px 12px;
-    border-radius:0 10px 10px 0;
-    margin-top:8px;
-  }
+      .diary-quote {
+        font-size: 13px;
+        color: var(--ink-soft);
+        line-height: 1.6;
+        background: rgba(255, 111, 156, 0.08);
+        border-left: 3px solid var(--accent-diary);
+        padding: 10px 12px;
+        border-radius: 0 10px 10px 0;
+        margin-top: 8px;
+      }
 
-  .water-card{
-    grid-column:span 1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
-  }
-  .cup{
-    width:56px;height:72px;
-    border:3px solid #8bd3ff;
-    border-top:none;
-    border-radius:0 0 16px 16px;
-    position:relative;
-    overflow:hidden;
-    margin-bottom:10px;
-    background:rgba(139,211,255,0.08);
-  }
-  .cup .water{
-    position:absolute;
-    bottom:0;left:0;right:0;
-    height:0%;
-    background:linear-gradient(180deg,#8bd3ff,#5da8ff);
-    animation:waterFill 1.6s .6s cubic-bezier(.2,.8,.2,1) forwards;
-  }
-  @keyframes waterFill{to{height:65%;}}
+      .water-card {
+        grid-column: span 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .cup {
+        width: 56px;
+        height: 72px;
+        border: 3px solid #8bd3ff;
+        border-top: none;
+        border-radius: 0 0 16px 16px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 10px;
+        background: rgba(139, 211, 255, 0.08);
+      }
+      .cup .water {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 0%;
+        background: linear-gradient(180deg, #8bd3ff, #5da8ff);
+        animation: waterFill 1.6s 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+      @keyframes waterFill {
+        to {
+          height: 65%;
+        }
+      }
 
-  .pulse-dot{
-    display:inline-block;width:7px;height:7px;border-radius:50%;
-    background:#3ec9b0;margin-right:6px;
-    box-shadow:0 0 0 rgba(62,201,176,0.5);
-    animation:pulse 2s infinite;
-  }
-  @keyframes pulse{
-    0%{box-shadow:0 0 0 0 rgba(62,201,176,0.5);}
-    70%{box-shadow:0 0 0 8px rgba(62,201,176,0);}
-    100%{box-shadow:0 0 0 0 rgba(62,201,176,0);}
-  }
+      .pulse-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #3ec9b0;
+        margin-right: 6px;
+        box-shadow: 0 0 0 rgba(62, 201, 176, 0.5);
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(62, 201, 176, 0.5);
+        }
+        70% {
+          box-shadow: 0 0 0 8px rgba(62, 201, 176, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(62, 201, 176, 0);
+        }
+      }
 
-  footer.note{
-    text-align:center;
-    color:var(--ink-soft);
-    font-size:12px;
-    margin-top:40px;
-    opacity:.7;
-  }
-</style>
-</head>
-<body>
-  <div class="blob blob1"></div>
-  <div class="blob blob2"></div>
-  <div class="blob blob3"></div>
+      footer.note {
+        text-align: center;
+        color: var(--ink-soft);
+        font-size: 12px;
+        margin-top: 40px;
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
 
-  <div class="app">
-    <header class="topbar">
-      <div class="brand"><span class="dot"></span>生活紀錄</div>
-      <div class="topbar-right">
-        <div class="greeting">
-          <div class="hi">早安，Fei 👋</div>
-          <div class="date">2026年9月17日・星期四</div>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand"><span class="dot"></span>生活紀錄</div>
+        <div class="topbar-right">
+          <div class="greeting">
+            <div class="hi">早安，Fei 👋</div>
+            <div class="date">2026年9月17日・星期四</div>
+          </div>
+          <div class="avatar">F</div>
         </div>
-        <div class="avatar">F</div>
-      </div>
-    </header>
+      </header>
 
-    <nav class="tabs" id="tabs">
-      <div class="tab-indicator" id="indicator"></div>
-      <button class="active" data-tab="0">總覽</button>
-      <button data-tab="1">記帳</button>
-      <button data-tab="2">飲食</button>
-      <button data-tab="3">身體紀錄</button>
-      <button data-tab="4">運動</button>
-      <button data-tab="5">日記</button>
-    </nav>
+      <nav class="tabs" id="tabs">
+        <div class="tab-indicator" id="indicator"></div>
+        <button class="active" data-tab="0">總覽</button>
+        <button data-tab="1">記帳</button>
+        <button data-tab="2">飲食</button>
+        <button data-tab="3">身體紀錄</button>
+        <button data-tab="4">運動</button>
+        <button data-tab="5">日記</button>
+      </nav>
 
-    <section class="grid" id="overview">
-      <div class="card money">
-        <div class="card-head">
-          <div><div class="card-title">本月記帳</div></div>
-          <div class="card-icon">💰</div>
+      <section class="grid" id="overview">
+        <div class="card money">
+          <div class="card-head">
+            <div><div class="card-title">本月記帳</div></div>
+            <div class="card-icon">💰</div>
+          </div>
+          <div class="card-value">$18,420 <small>/ $25,000</small></div>
+          <div class="bar"><div class="bar-fill" style="--w: 74%"></div></div>
         </div>
-        <div class="card-value">$18,420 <small>/ $25,000</small></div>
-        <div class="bar"><div class="bar-fill" style="--w:74%"></div></div>
-      </div>
 
-      <div class="card food">
-        <div class="card-head">
-          <div><div class="card-title">今日飲食</div></div>
-          <div class="card-icon">🍱</div>
-        </div>
-        <div class="card-value">1,340 <small>kcal</small></div>
-        <div class="mini-row">
-          <div class="macro"><div class="bar" style="height:6px;"><div class="bar-fill" style="width:60%;background:var(--accent-food);"></div></div><div class="lbl">醣</div></div>
-          <div class="macro"><div class="bar" style="height:6px;"><div class="bar-fill" style="width:40%;background:#ffb37a;"></div></div><div class="lbl">蛋白</div></div>
-          <div class="macro"><div class="bar" style="height:6px;"><div class="bar-fill" style="width:30%;background:#ffcfa1;"></div></div><div class="lbl">脂肪</div></div>
-        </div>
-      </div>
-
-      <div class="card body">
-        <div class="card-head">
-          <div><div class="card-title">身體紀錄</div></div>
-          <div class="card-icon">⚖️</div>
-        </div>
-        <div class="card-value">62.4 <small>kg (-0.3)</small></div>
-        <svg width="100%" height="36" viewBox="0 0 200 36" preserveAspectRatio="none">
-          <polyline points="0,26 30,22 60,24 90,15 120,18 150,10 180,12 200,6" fill="none" stroke="var(--accent-body)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-
-      <div class="card exercise">
-        <div class="card-head">
-          <div><div class="card-title">今日運動</div></div>
-          <div class="card-icon">🏃</div>
-        </div>
-        <div class="ring-wrap">
-          <svg class="ring" viewBox="0 0 60 60">
-            <circle class="bg" cx="30" cy="30" r="27"/>
-            <circle class="fg" cx="30" cy="30" r="27"/>
-          </svg>
-          <div>
-            <div class="card-value" style="margin:0;">6,240 <small>步</small></div>
-            <div class="card-title">目標 8,000</div>
+        <div class="card food">
+          <div class="card-head">
+            <div><div class="card-title">今日飲食</div></div>
+            <div class="card-icon">🍱</div>
+          </div>
+          <div class="card-value">1,340 <small>kcal</small></div>
+          <div class="mini-row">
+            <div class="macro">
+              <div class="bar" style="height: 6px">
+                <div
+                  class="bar-fill"
+                  style="width: 60%; background: var(--accent-food)"
+                ></div>
+              </div>
+              <div class="lbl">醣</div>
+            </div>
+            <div class="macro">
+              <div class="bar" style="height: 6px">
+                <div
+                  class="bar-fill"
+                  style="width: 40%; background: #ffb37a"
+                ></div>
+              </div>
+              <div class="lbl">蛋白</div>
+            </div>
+            <div class="macro">
+              <div class="bar" style="height: 6px">
+                <div
+                  class="bar-fill"
+                  style="width: 30%; background: #ffcfa1"
+                ></div>
+              </div>
+              <div class="lbl">脂肪</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="card diary">
-        <div class="card-head">
-          <div><div class="card-title"><span class="pulse-dot"></span>連續寫日記 12 天</div></div>
-          <div class="card-icon">📔</div>
+        <div class="card body">
+          <div class="card-head">
+            <div><div class="card-title">身體紀錄</div></div>
+            <div class="card-icon">⚖️</div>
+          </div>
+          <div class="card-value">62.4 <small>kg (-0.3)</small></div>
+          <svg
+            width="100%"
+            height="36"
+            viewBox="0 0 200 36"
+            preserveAspectRatio="none"
+          >
+            <polyline
+              points="0,26 30,22 60,24 90,15 120,18 150,10 180,12 200,6"
+              fill="none"
+              stroke="var(--accent-body)"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
         </div>
-        <div class="card-value" style="font-size:18px;">今天心情：😊 平靜</div>
-        <div class="diary-quote">「下班後去河堤跑了 3 公里，感覺身體慢慢找回節奏……」</div>
-      </div>
 
-      <div class="card water-card">
-        <div class="card-head" style="width:100%;">
-          <div class="card-title">今日喝水</div>
-          <div class="card-icon" style="background:rgba(93,168,255,0.15);color:#5da8ff;">💧</div>
+        <div class="card exercise">
+          <div class="card-head">
+            <div><div class="card-title">今日運動</div></div>
+            <div class="card-icon">🏃</div>
+          </div>
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 60 60">
+              <circle class="bg" cx="30" cy="30" r="27" />
+              <circle class="fg" cx="30" cy="30" r="27" />
+            </svg>
+            <div>
+              <div class="card-value" style="margin: 0">
+                6,240 <small>步</small>
+              </div>
+              <div class="card-title">目標 8,000</div>
+            </div>
+          </div>
         </div>
-        <div class="cup"><div class="water"></div></div>
-        <div class="card-value" style="margin:0;font-size:18px;">1,300 <small>/ 2,000 ml</small></div>
-      </div>
-    </section>
 
-    <footer class="note">示意圖 A・Aurora Glass ｜ 玻璃霧面 + 極光漸層 + 卡片入場動畫</footer>
-  </div>
+        <div class="card diary">
+          <div class="card-head">
+            <div>
+              <div class="card-title">
+                <span class="pulse-dot"></span>連續寫日記 12 天
+              </div>
+            </div>
+            <div class="card-icon">📔</div>
+          </div>
+          <div class="card-value" style="font-size: 18px">
+            今天心情：😊 平靜
+          </div>
+          <div class="diary-quote">
+            「下班後去河堤跑了 3 公里，感覺身體慢慢找回節奏……」
+          </div>
+        </div>
 
-<script>
-  document.querySelectorAll('.bar-fill').forEach(el=>{
-    const w = el.style.getPropertyValue('--w') || el.style.width;
-    if(el.style.getPropertyValue('--w')){
-      requestAnimationFrame(()=> setTimeout(()=> el.style.width = w, 400));
-    }
-  });
+        <div class="card water-card">
+          <div class="card-head" style="width: 100%">
+            <div class="card-title">今日喝水</div>
+            <div
+              class="card-icon"
+              style="background: rgba(93, 168, 255, 0.15); color: #5da8ff"
+            >
+              💧
+            </div>
+          </div>
+          <div class="cup"><div class="water"></div></div>
+          <div class="card-value" style="margin: 0; font-size: 18px">
+            1,300 <small>/ 2,000 ml</small>
+          </div>
+        </div>
+      </section>
 
-  const tabsEl = document.getElementById('tabs');
-  const indicator = document.getElementById('indicator');
-  const buttons = tabsEl.querySelectorAll('button');
-  const colors = ['linear-gradient(135deg,#7c6cf0,#9d8cff)','linear-gradient(135deg,#7c6cf0,#9d8cff)','linear-gradient(135deg,#ff9a5c,#ffc08a)','linear-gradient(135deg,#3ec9b0,#7fe6cf)','linear-gradient(135deg,#5da8ff,#93c9ff)','linear-gradient(135deg,#ff6f9c,#ff9ab8)'];
+      <footer class="note">
+        示意圖 A・Aurora Glass ｜ 玻璃霧面 + 極光漸層 + 卡片入場動畫
+      </footer>
+    </div>
 
-  function moveIndicator(btn){
-    indicator.style.width = btn.offsetWidth + 'px';
-    indicator.style.transform = `translateX(${btn.offsetLeft - 6}px)`;
-    indicator.style.background = colors[btn.dataset.tab];
-  }
-  window.addEventListener('load', ()=> moveIndicator(buttons[0]));
-  buttons.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      buttons.forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      moveIndicator(btn);
-    });
-  });
-</script>
-</body>
+    <script>
+      document.querySelectorAll('.bar-fill').forEach((el) => {
+        const w = el.style.getPropertyValue('--w') || el.style.width;
+        if (el.style.getPropertyValue('--w')) {
+          requestAnimationFrame(() =>
+            setTimeout(() => (el.style.width = w), 400),
+          );
+        }
+      });
+
+      const tabsEl = document.getElementById('tabs');
+      const indicator = document.getElementById('indicator');
+      const buttons = tabsEl.querySelectorAll('button');
+      const colors = [
+        'linear-gradient(135deg,#7c6cf0,#9d8cff)',
+        'linear-gradient(135deg,#7c6cf0,#9d8cff)',
+        'linear-gradient(135deg,#ff9a5c,#ffc08a)',
+        'linear-gradient(135deg,#3ec9b0,#7fe6cf)',
+        'linear-gradient(135deg,#5da8ff,#93c9ff)',
+        'linear-gradient(135deg,#ff6f9c,#ff9ab8)',
+      ];
+
+      function moveIndicator(btn) {
+        indicator.style.width = btn.offsetWidth + 'px';
+        indicator.style.transform = `translateX(${btn.offsetLeft - 6}px)`;
+        indicator.style.background = colors[btn.dataset.tab];
+      }
+      window.addEventListener('load', () => moveIndicator(buttons[0]));
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          buttons.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          moveIndicator(btn);
+        });
+      });
+    </script>
+  </body>
 </html>
