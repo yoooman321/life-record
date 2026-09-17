@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>生活紀錄 · Soft Minimal</title>
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#fffdfa;
+    --ink:#3a352f;
+    --ink-soft:#928c80;
+    --line:#eae3d7;
+    --accent-money:#c98a4b;
+    --accent-food:#e07856;
+    --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9;
+    --accent-diary:#b06a9e;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* sidebar */
+  .sidebar{
+    width:220px;
+    flex-shrink:0;
+    padding:28px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    opacity:0;
+    animation:slideIn .6s ease forwards;
+  }
+  @keyframes slideIn{ from{opacity:0;transform:translateX(-16px);} to{opacity:1;transform:translateX(0);} }
+
+  .logo{
+    font-weight:800;
+    font-size:19px;
+    margin:6px 10px 28px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .logo .mark{
+    width:30px;height:30px;border-radius:10px;
+    background:linear-gradient(135deg,var(--accent-money),var(--accent-food));
+    display:inline-block;
+  }
+
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 14px;
+    border-radius:14px;
+    color:var(--ink-soft);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:all .35s cubic-bezier(.2,.8,.2,1);
+    position:relative;
+  }
+  .nav-item .icon{
+    width:30px;height:30px;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    background:transparent;
+    transition:all .35s ease;
+    font-size:15px;
+  }
+  .nav-item:hover{color:var(--ink);}
+  .nav-item.active{
+    color:var(--ink);
+    background:var(--panel);
+    box-shadow:var(--shadow-out);
+    transform:translateX(4px);
+  }
+  .nav-item.active .icon{
+    background:linear-gradient(135deg,var(--tint,#c98a4b),transparent);
+    box-shadow:var(--shadow-in);
+  }
+  .nav-item[data-tab="0"] .icon{--tint:#c98a4b;}
+  .nav-item[data-tab="1"] .icon{--tint:#c98a4b;}
+  .nav-item[data-tab="2"] .icon{--tint:#e07856;}
+  .nav-item[data-tab="3"] .icon{--tint:#4f9d8a;}
+  .nav-item[data-tab="4"] .icon{--tint:#5c86c9;}
+  .nav-item[data-tab="5"] .icon{--tint:#b06a9e;}
+
+  .sidebar-foot{
+    margin-top:auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px;
+    border-radius:14px;
+    background:var(--panel);
+    box-shadow:var(--shadow-out);
+  }
+  .sidebar-foot .av{
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,#c98a4b,#e07856);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;
+  }
+  .sidebar-foot .txt{font-size:12px;color:var(--ink-soft);}
+  .sidebar-foot .txt b{display:block;color:var(--ink);font-size:13px;}
+
+  /* main */
+  main{
+    flex:1;
+    padding:32px 40px 60px;
+    max-width:980px;
+  }
+  .page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:26px;
+    opacity:0;
+    animation:fadeUp .6s ease .1s forwards;
+  }
+  .page-head h1{font-size:26px;margin:0 0 4px;}
+  .page-head p{margin:0;color:var(--ink-soft);font-size:14px;}
+  .date-pill{
+    background:var(--panel);
+    box-shadow:var(--shadow-out);
+    padding:8px 16px;
+    border-radius:100px;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  @keyframes fadeUp{ from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:18px;
+  }
+  .grid .card:nth-child(4),
+  .grid .card:nth-child(5){grid-column:span 1;}
+
+  .card{
+    background:var(--panel);
+    border-radius:20px;
+    padding:22px;
+    box-shadow:var(--shadow-out);
+    opacity:0;
+    transform:translateY(20px) scale(.98);
+    animation:cardIn .55s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  .card:nth-child(1){animation-delay:.15s;}
+  .card:nth-child(2){animation-delay:.22s;}
+  .card:nth-child(3){animation-delay:.29s;}
+  .card:nth-child(4){animation-delay:.36s;}
+  .card:nth-child(5){animation-delay:.43s;}
+  .card:nth-child(6){animation-delay:.5s;}
+  @keyframes cardIn{ to{opacity:1;transform:translateY(0) scale(1);} }
+
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .card-title{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .card-icon{
+    width:36px;height:36px;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    box-shadow:var(--shadow-in);
+  }
+  .card-value{font-size:24px;font-weight:800;margin-bottom:12px;}
+  .card-value small{font-size:12px;color:var(--ink-soft);font-weight:600;}
+
+  .track{height:10px;border-radius:8px;box-shadow:var(--shadow-in);overflow:hidden;background:transparent;}
+  .track-fill{height:100%;border-radius:8px;width:0;transition:width 1.3s cubic-bezier(.2,.8,.2,1);}
+
+  .money-c .track-fill{background:linear-gradient(90deg,var(--accent-money),#e0aa6f);}
+  .food-c .track-fill{background:linear-gradient(90deg,var(--accent-food),#f0a284);}
+  .exercise-c .track-fill{background:linear-gradient(90deg,var(--accent-exercise),#8fb0e0);}
+
+  .money-c .card-icon{color:var(--accent-money);}
+  .food-c .card-icon{color:var(--accent-food);}
+  .body-c .card-icon{color:var(--accent-body);}
+  .exercise-c .card-icon{color:var(--accent-exercise);}
+  .diary-c .card-icon{color:var(--accent-diary);}
+
+  .count{display:inline-block;}
+
+  .body-c .sparkline{width:100%;}
+  .water-widget{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .water-ring{position:relative;width:58px;height:58px;flex-shrink:0;}
+  .water-ring svg{transform:rotate(-90deg);}
+  .water-ring circle{fill:none;stroke-width:6;}
+  .water-ring .bg{stroke:#eae3d7;}
+  .water-ring .fg{stroke:#5c86c9;stroke-linecap:round;stroke-dasharray:157;stroke-dashoffset:157;animation:ringGo 1.4s .6s cubic-bezier(.2,.8,.2,1) forwards;}
+  @keyframes ringGo{ to{stroke-dashoffset:55;} }
+  .water-ring .emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;}
+
+  .diary-c .quote{
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.7;
+    margin-top:4px;
+    font-style:italic;
+  }
+  .mood-row{display:flex;gap:6px;margin-top:10px;}
+  .mood-row span{
+    width:26px;height:26px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;
+    box-shadow:var(--shadow-in);
+    opacity:.45;
+  }
+  .mood-row span.active{opacity:1;box-shadow:0 0 0 2px var(--accent-diary);background:#fff;}
+
+  .streak{
+    display:flex;align-items:center;gap:6px;
+    font-size:12px;color:var(--ink-soft);
+    margin-top:10px;
+  }
+  .streak .flame{color:var(--accent-food);animation:flick 1.6s infinite;}
+  @keyframes flick{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+
+  footer.note{margin-top:36px;color:var(--ink-soft);font-size:12px;opacity:.7;}
+</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><span class="mark"></span>生活紀錄</div>
+    <div class="nav-item active" data-tab="0"><span class="icon">🏠</span>總覽</div>
+    <div class="nav-item" data-tab="1"><span class="icon">💰</span>記帳</div>
+    <div class="nav-item" data-tab="2"><span class="icon">🍱</span>飲食</div>
+    <div class="nav-item" data-tab="3"><span class="icon">⚖️</span>身體紀錄</div>
+    <div class="nav-item" data-tab="4"><span class="icon">🏃</span>運動</div>
+    <div class="nav-item" data-tab="5"><span class="icon">📔</span>日記</div>
+    <div class="sidebar-foot">
+      <div class="av">F</div>
+      <div class="txt"><b>Fei</b>連續使用 21 天</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>早安，Fei</h1>
+        <p>這是你今天的生活紀錄總覽</p>
+      </div>
+      <div class="date-pill">2026年9月17日・星期四</div>
+    </div>
+
+    <section class="grid">
+      <div class="card money-c">
+        <div class="card-head">
+          <div class="card-title">本月記帳</div>
+          <div class="card-icon">💰</div>
+        </div>
+        <div class="card-value">$18,420 <small>/ $25,000</small></div>
+        <div class="track"><div class="track-fill" data-w="74%"></div></div>
+      </div>
+
+      <div class="card food-c">
+        <div class="card-head">
+          <div class="card-title">今日飲食</div>
+          <div class="card-icon">🍱</div>
+        </div>
+        <div class="card-value">1,340 <small>kcal / 2,000</small></div>
+        <div class="track"><div class="track-fill" data-w="67%"></div></div>
+      </div>
+
+      <div class="card exercise-c">
+        <div class="card-head">
+          <div class="card-title">今日運動</div>
+          <div class="card-icon">🏃</div>
+        </div>
+        <div class="card-value">6,240 <small>步 / 8,000</small></div>
+        <div class="track"><div class="track-fill" data-w="78%"></div></div>
+      </div>
+
+      <div class="card body-c">
+        <div class="card-head">
+          <div class="card-title">身體紀錄</div>
+          <div class="card-icon">⚖️</div>
+        </div>
+        <div class="card-value">62.4 <small>kg（-0.3 較上週）</small></div>
+        <svg class="sparkline" height="34" viewBox="0 0 200 34" preserveAspectRatio="none">
+          <polyline points="0,24 30,20 60,22 90,13 120,16 150,8 180,10 200,4" fill="none" stroke="#4f9d8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="card" style="grid-column:span 1;">
+        <div class="card-head">
+          <div class="card-title">今日喝水</div>
+          <div class="card-icon" style="color:#5c86c9;">💧</div>
+        </div>
+        <div class="water-widget">
+          <div class="water-ring">
+            <svg viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="25"/><circle class="fg" cx="30" cy="30" r="25"/></svg>
+            <div class="emoji">💧</div>
+          </div>
+          <div>
+            <div class="card-value" style="margin:0;font-size:20px;">1,300<small> / 2,000ml</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card diary-c">
+        <div class="card-head">
+          <div class="card-title">日記</div>
+          <div class="card-icon">📔</div>
+        </div>
+        <div class="mood-row">
+          <span>😔</span><span>😐</span><span class="active">😊</span><span>😄</span><span>🤩</span>
+        </div>
+        <div class="quote">「下班後去河堤跑了 3 公里，感覺身體慢慢找回節奏……」</div>
+        <div class="streak"><span class="flame">🔥</span>連續紀錄 12 天</div>
+      </div>
+    </section>
+
+    <footer class="note">示意圖 B・Soft Minimal ｜ 溫暖大地色 + 新擬態卡片 + 側邊導覽</footer>
+  </main>
+
+<script>
+  document.querySelectorAll('.track-fill').forEach(el=>{
+    const w = el.getAttribute('data-w');
+    setTimeout(()=> el.style.width = w, 350);
+  });
+
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
