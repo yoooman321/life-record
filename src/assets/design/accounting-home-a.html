@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>記帳史萊姆首頁 · A 版（頂部次導覽）</title>
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#fffdfa;
+    --ink:#3a352f;
+    --ink-soft:#928c80;
+    --line:#eae3d7;
+    --accent-money:#c98a4b;
+    --accent-food:#e07856;
+    --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9;
+    --accent-diary:#b06a9e;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  .shell{display:flex;min-height:100vh;}
+
+  /* 沿用既有 RootLayout 側邊欄樣式（此處為示意，非真實可互動） */
+  .sidebar{
+    width:220px;flex-shrink:0;padding:28px 16px;
+    display:flex;flex-direction:column;gap:6px;
+    opacity:0;animation:slideIn .6s ease forwards;
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
+  .logo{font-weight:800;font-size:19px;margin:6px 10px 28px;display:flex;align-items:center;gap:8px;}
+  .logo .mark{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,var(--accent-money),var(--accent-food));}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;color:var(--ink-soft);font-weight:600;font-size:14px;}
+  .nav-item .icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .nav-item.active{color:var(--ink);background:var(--panel);box-shadow:var(--shadow-out);}
+  .nav-item.active .icon{background:rgba(201,138,75,.15);box-shadow:var(--shadow-in);}
+
+  main{flex:1;padding:32px 40px 60px;position:relative;}
+
+  /* 頂部資訊列 */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:20px;
+    opacity:0;animation:fadeUp .6s ease .05s forwards;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .back-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel);box-shadow:var(--shadow-out);
+    border-radius:100px;padding:8px 16px 8px 12px;
+    font-size:13px;font-weight:700;color:var(--ink-soft);
+  }
+  .date-budget{text-align:center;}
+  .date-budget .date{font-size:13px;color:var(--ink-soft);margin-bottom:2px;}
+  .date-budget .budget{font-size:14px;font-weight:700;}
+  .date-budget .budget b{color:var(--accent-food);font-weight:800;}
+  .top-right{display:flex;align-items:center;gap:10px;}
+  .gold-pill{
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel);box-shadow:var(--shadow-out);
+    border-radius:100px;padding:8px 16px;
+    font-size:13px;font-weight:800;color:var(--accent-money);
+  }
+  .icon-btn{
+    width:40px;height:40px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--panel);box-shadow:var(--shadow-out);
+    font-size:16px;color:var(--ink-soft);
+  }
+
+  /* 次導覽（史萊姆／戰鬥／商店／統計／設定） */
+  .sub-nav{
+    display:flex;gap:8px;
+    background:var(--panel);box-shadow:var(--shadow-out);
+    border-radius:20px;padding:8px;margin-bottom:28px;
+    opacity:0;animation:fadeUp .6s ease .1s forwards;
+  }
+  .sub-nav a{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:10px 8px;border-radius:14px;
+    font-size:12px;font-weight:700;color:var(--ink-soft);
+  }
+  .sub-nav a .ic{font-size:18px;}
+  .sub-nav a.current{background:var(--bg);box-shadow:var(--shadow-in);color:var(--ink);}
+  .sub-nav a.battle{position:relative;}
+  .sub-nav a.battle .ic{
+    width:46px;height:46px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--accent-food),#ff9f73);
+    color:#fff;box-shadow:0 8px 18px -6px rgba(224,120,86,.6);
+    font-size:20px;margin-top:-20px;
+  }
+
+  /* 主內容：史萊姆區 + 側邊資訊面板 */
+  .content-grid{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:24px;
+    opacity:0;animation:fadeUp .6s ease .18s forwards;
+  }
+  .slime-card{
+    background:var(--panel);box-shadow:var(--shadow-out);
+    border-radius:24px;padding:32px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:420px;
+  }
+  .slime-placeholder{
+    width:220px;height:220px;border-radius:50%;
+    border:3px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);font-size:13px;text-align:center;line-height:1.6;
+  }
+  .slime-hint{margin-top:20px;font-size:13px;color:var(--ink-soft);text-align:center;}
+
+  .side-panel{
+    background:var(--panel);box-shadow:var(--shadow-out);
+    border-radius:24px;padding:22px;
+    display:flex;flex-direction:column;
+  }
+  .panel-tabs{display:flex;gap:6px;background:var(--bg);border-radius:100px;padding:6px;margin-bottom:18px;}
+  .panel-tabs button{
+    flex:1;border:none;background:transparent;font-family:inherit;
+    padding:9px 10px;border-radius:100px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;
+  }
+  .panel-tabs button.active{background:var(--panel);box-shadow:var(--shadow-out);color:var(--ink);}
+
+  .period-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(79,157,138,.12);color:var(--accent-body);
+    font-size:12px;font-weight:700;padding:6px 12px;border-radius:100px;
+    margin-bottom:14px;width:fit-content;
+  }
+  .period-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-body);}
+  .period-range{font-size:12px;color:var(--ink-soft);margin-bottom:18px;}
+
+  .stat-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:13px;}
+  .stat-row .name{display:flex;align-items:center;gap:8px;font-weight:600;}
+  .stat-track{flex:1;height:8px;border-radius:6px;box-shadow:var(--shadow-in);margin:0 12px;overflow:hidden;}
+  .stat-track div{height:100%;border-radius:6px;}
+  .stat-value{font-weight:800;width:36px;text-align:right;}
+
+  .spend-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .spend-item:last-child{border-bottom:none;}
+  .spend-item .cat{display:flex;align-items:center;gap:8px;color:var(--ink-soft);}
+
+  .budget-summary{
+    margin-top:24px;background:var(--panel);box-shadow:var(--shadow-out);
+    border-radius:20px;padding:18px 22px;
+    opacity:0;animation:fadeUp .6s ease .26s forwards;
+  }
+  .budget-summary .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .budget-summary .row b{font-size:20px;}
+  .budget-track{height:10px;border-radius:8px;box-shadow:var(--shadow-in);overflow:hidden;}
+  .budget-track div{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--accent-money),#e0aa6f);width:62%;}
+
+  .treasure-fab{
+    position:fixed;right:40px;bottom:40px;
+    display:flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,var(--accent-money),#e0aa6f);
+    color:#fff;border-radius:100px;padding:14px 22px;
+    box-shadow:0 14px 30px -10px rgba(201,138,75,.6);
+    font-weight:800;font-size:14px;
+  }
+
+  footer.note{position:fixed;left:260px;bottom:16px;color:var(--ink-soft);font-size:12px;opacity:.7;}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="logo"><span class="mark"></span>生活紀錄</div>
+      <div class="nav-item active"><span class="icon">💰</span>記帳</div>
+      <div class="nav-item"><span class="icon">🍱</span>飲食</div>
+      <div class="nav-item"><span class="icon">⚖️</span>身體紀錄</div>
+      <div class="nav-item"><span class="icon">🏃</span>運動</div>
+      <div class="nav-item"><span class="icon">📔</span>日記</div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="back-btn">← 返回總覽</div>
+        <div class="date-budget">
+          <div class="date">2026年9月23日・星期三</div>
+          <div class="budget">本月支出 <b>$18,420</b> / 預算 $30,000</div>
+        </div>
+        <div class="top-right">
+          <div class="gold-pill">🪙 1,280</div>
+          <div class="icon-btn">⚙️</div>
+        </div>
+      </div>
+
+      <nav class="sub-nav">
+        <a class="current"><span class="ic">🟢</span>史萊姆</a>
+        <a class="battle"><span class="ic">⚔️</span></a>
+        <a><span class="ic">🛍️</span>商店</a>
+        <a><span class="ic">📊</span>統計</a>
+        <a><span class="ic">⚙️</span>設定</a>
+      </nav>
+
+      <div class="content-grid">
+        <div class="slime-card">
+          <div class="slime-placeholder">史萊姆畫面<br />（開發中，先留空）</div>
+          <div class="slime-hint">點擊可查看能力值與花費紀錄 → 詳見右側面板</div>
+        </div>
+
+        <div class="side-panel">
+          <div class="panel-tabs">
+            <button class="active">花費紀錄</button>
+            <button>能力值分配</button>
+          </div>
+
+          <div class="period-badge"><span class="dot"></span>培育中</div>
+          <div class="period-range">記帳區間：2026/09/17 － 2026/09/24</div>
+
+          <div class="spend-item"><span class="cat">🍱 飲食</span><span>$1,340</span></div>
+          <div class="spend-item"><span class="cat">🚌 交通</span><span>$620</span></div>
+          <div class="spend-item"><span class="cat">🎉 社交</span><span>$980</span></div>
+          <div class="spend-item"><span class="cat">💻 學習/3C</span><span>$2,100</span></div>
+          <div class="spend-item"><span class="cat">🏠 居家/水電</span><span>$540</span></div>
+        </div>
+      </div>
+
+      <div class="budget-summary">
+        <div class="row"><span>本月總支出</span><b>$18,420</b></div>
+        <div class="budget-track"><div></div></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="treasure-fab">🎁 領取寶藏</div>
+  <footer class="note">示意圖 A・頂部次導覽 ｜ 花費紀錄／能力值分配常駐在右側面板，不用滑動</footer>
+
+<script>
+  document.querySelectorAll('.panel-tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.panel-tabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

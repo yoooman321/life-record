@@ -1,10 +1,6 @@
-// import AddCategoryModal from '@/components/accounting/AddCategoryModal';
-import AddEntryModal from '@/components/accounting/AddEntryModal';
-
 export default function HomePage() {
   return (
     <>
-      <AddEntryModal />
       {/* TODO(練習動畫)：原本這裡有進場動畫（opacity 0 -> 1 + 位移，animation: fadeUp） */}
       <div className="mb-6.5 flex items-end justify-between">
         <div>

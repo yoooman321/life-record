@@ -8,7 +8,9 @@ import HomePage from '@/pages/Home';
 // import AccountingTagManagementPage from '@/pages/accounting/TagManagement';
 // import AccountingRecurringPage from '@/pages/accounting/Recurring';
 // import AccountingBudgetPage from '@/pages/accounting/Budget';
-import AccountingExportPage from '@/pages/accounting/Export';
+// import AccountingExportPage from '@/pages/accounting/Export';
+import AccountingHomePage from '@/pages/accounting/Home';
+import AccountingLayout from '@/layout/AccountingLayout';
 
 export const router = createBrowserRouter([
   {
@@ -21,7 +23,13 @@ export const router = createBrowserRouter([
       },
       {
         path: '/accounting',
-        Component: AccountingExportPage,
+        Component: AccountingLayout,
+        children: [
+          {
+            index: true,
+            Component: AccountingHomePage,
+          },
+        ],
       },
     ],
   },
