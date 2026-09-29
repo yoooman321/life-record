@@ -1,25 +1,36 @@
+import type { ImageItem } from '@/type';
 import { useEffect, useMemo, useRef } from 'react';
 
 type FileSelectorProps = {
-  selectedFile: File | null;
+  imageConfig: ImageItem;
   onFileChange: (file: File | null) => void;
 };
 
+const getFileName = (imageConfig: ImageItem) => {
+  return imageConfig.type === 'new' ? imageConfig.file?.name : imageConfig.name;
+};
+
 export default function FileSelector({
-  selectedFile,
+  imageConfig,
   onFileChange,
 }: FileSelectorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const imagePreview = useMemo(() => {
-    if (!selectedFile) return '';
-    return URL.createObjectURL(selectedFile);
-  }, [selectedFile]);
+    if (imageConfig.type === 'old') {
+      return imageConfig.url;
+    }
+    if (!imageConfig.file) return '';
+    return URL.createObjectURL(imageConfig.file);
+  }, [imageConfig]);
+  const fileName = getFileName(imageConfig);
 
   useEffect(() => {
     return () => {
-      URL.revokeObjectURL(imagePreview);
+      if (imageConfig.type === 'new') {
+        URL.revokeObjectURL(imagePreview);
+      }
     };
-  }, [imagePreview]);
+  }, [imageConfig, imagePreview]);
 
   return (
     <>
@@ -35,7 +46,7 @@ export default function FileSelector({
         }}
       />
 
-      {selectedFile ? (
+      {imagePreview ? (
         // 已選照片：縮圖／檔名（點擊＝重新選檔案，換照片）跟移除按鈕，是兩個各自獨立的可點擊元素，
         // 不能包在同一個 <button> 裡（HTML 不允許 button 巢狀）
         <div className="flex items-center justify-between px-4 py-3.5">
@@ -48,11 +59,11 @@ export default function FileSelector({
           >
             <img
               src={imagePreview}
-              alt={selectedFile.name}
+              alt={fileName}
               className="h-11 w-11 shrink-0 rounded-[11px] object-cover shadow-in"
             />
             <span className="truncate text-sm font-semibold text-ink">
-              {selectedFile.name}
+              {fileName}
             </span>
           </button>
           <button

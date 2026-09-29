@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AddEntryModal from './AddEntryModal';
+import ByDateRecords from './ByDateRecords';
 
 export default function BriefSummary() {
   const [openModal, setOpenModal] = useState(false);
@@ -15,9 +16,7 @@ export default function BriefSummary() {
           ← 返回總覽
         </button> */}
           <div>
-            <div className="text-[13px] text-ink-soft">
-              2026年9月23日・星期三
-            </div>
+            <ByDateRecords />
             <div className="mt-0.5 text-[15px] font-extrabold">
               $18,420{' '}
               <span className="text-[13px] font-semibold text-ink-soft">

@@ -1,4 +1,4 @@
-type objType = number | string | File;
+type objType = number | string | File | boolean;
 
 type appendDataArgs = {
   formData: FormData;
@@ -15,19 +15,16 @@ const toSnakeCase = (str: string): string => {
 };
 
 const appendData = ({ formData, key, value }: appendDataArgs) => {
-  if (typeof value === 'number') {
-    console.log('ddddd', toSnakeCase(key));
+  if (typeof value === 'number' || typeof value === 'boolean') {
     formData.append(toSnakeCase(key), value.toString());
   } else {
-    console.log('gggg', toSnakeCase(key));
     formData.append(toSnakeCase(key), value);
   }
 };
 
 export const objectToFormData = (
-  obj: Record<string, objType | objType[] | undefined | null>,
+  obj: Record<string, objType | objType[] | undefined | null | boolean>,
 ): FormData => {
-  console.log('ll', obj);
   const formData = new FormData();
   Object.entries(obj).forEach(([key, value]) => {
     if (Array.isArray(value)) {

@@ -23,14 +23,15 @@ export default function DateSelector({
           onDateChange(e.target.value);
         }}
       />
-      <div
-        className="mb-5 text-center text-sm font-semibold text-ink-soft"
+      <button
+        type="button"
+        className="w-full mb-5 text-center text-sm font-semibold text-ink-soft"
         onClick={() => {
           dateInput.current?.showPicker();
         }}
       >
         {selectedDate}・{getWeekDay(selectedDate)}
-      </div>
+      </button>
     </div>
   );
 }

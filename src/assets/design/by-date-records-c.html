@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>By-date 花費紀錄 · C 版（原地展開，替代方案）</title>
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#fffdfa;
+    --ink:#3a352f;
+    --ink-soft:#928c80;
+    --line:#eae3d7;
+    --accent-money:#c98a4b;
+    --accent-food:#e07856;
+    --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9;
+    --accent-diary:#b06a9e;
+    --danger:#c9584b;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:40px 24px 80px;}
+  h1{font-size:15px;margin:0 0 6px;}
+  .note{font-size:12px;color:var(--ink-soft);margin:0 0 8px;}
+  .warn{font-size:12px;color:var(--accent-food);font-weight:700;margin:0 0 24px;}
+  .demo-label{font-size:13px;font-weight:800;color:var(--ink-soft);margin:36px 0 12px;display:flex;align-items:center;gap:8px;}
+
+  .desktop-wrap{max-width:900px;}
+  .header-card{display:flex;align-items:center;justify-content:space-between;background:var(--panel);box-shadow:var(--shadow-out);border-radius:20px;padding:18px 24px;}
+  .header-card .left{display:flex;align-items:center;gap:16px;}
+  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink-soft);background:var(--bg);border-radius:100px;padding:8px 14px;border:none;font-family:inherit;cursor:pointer;}
+  .header-card .right{display:flex;align-items:center;gap:12px;}
+  .add-entry-btn{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--accent-money),#e0aa6f);color:#fff;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:800;box-shadow:var(--shadow-out);border:none;font-family:inherit;cursor:pointer;}
+  .gold-pill{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:100px;padding:8px 16px;font-size:13px;font-weight:800;color:var(--accent-money);}
+  .icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg);box-shadow:var(--shadow-in);font-size:15px;color:var(--ink-soft);}
+
+  .date-pill{display:flex;align-items:center;gap:8px;background:var(--bg);box-shadow:var(--shadow-in);border-radius:100px;padding:8px 14px 8px 12px;border:none;font-family:inherit;cursor:pointer;color:var(--ink);}
+  .date-pill .pill-icon{font-size:14px;}
+  .date-pill .pill-label{font-size:13px;font-weight:800;}
+  .date-pill .pill-chevron{font-size:10px;color:var(--ink-soft);transition:transform .2s ease;}
+  .date-pill.open .pill-chevron{transform:rotate(180deg);}
+  .date-pill .pill-badge{font-size:11px;font-weight:800;color:var(--accent-money);background:rgba(201,138,75,.14);border-radius:100px;padding:3px 9px;margin-left:2px;}
+
+  /* ---- 原地展開的面板：一般文件流，不是 absolute popover ---- */
+  .inline-panel{
+    max-height:0;opacity:0;overflow:hidden;
+    transition:max-height .3s ease, opacity .25s ease, margin-top .3s ease;
+    margin-top:0;background:var(--panel);border-radius:20px;box-shadow:var(--shadow-out);
+  }
+  .inline-panel.open{max-height:520px;opacity:1;margin-top:14px;}
+
+  .slide-panel{display:flex;width:200%;transition:transform .28s ease;}
+  .slide-panel.showing-edit{transform:translateX(-50%);}
+  .view{width:50%;flex-shrink:0;}
+
+  .date-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);}
+  .date-nav button{width:28px;height:28px;border-radius:50%;border:none;background:var(--bg);color:var(--ink-soft);font-size:13px;cursor:pointer;}
+  .date-nav span{font-size:13px;font-weight:800;}
+
+  .record-list{padding:8px 12px;max-height:340px;overflow-y:auto;}
+  .record-row{width:100%;display:flex;align-items:center;gap:10px;padding:11px 8px;border-radius:14px;border:none;background:transparent;font-family:inherit;text-align:left;cursor:pointer;}
+  .record-row:hover{background:var(--bg);}
+  .record-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .record-info{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .record-info b{font-size:13px;}
+  .record-info small{font-size:11px;color:var(--ink-soft);}
+  .record-amount{font-size:13px;font-weight:800;color:var(--ink);flex-shrink:0;}
+  .empty-state{padding:40px 16px;text-align:center;font-size:12px;color:var(--ink-soft);}
+
+  .edit-header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line);}
+  .edit-header .back-icon{width:28px;height:28px;border-radius:50%;border:none;background:var(--bg);color:var(--ink-soft);font-size:14px;cursor:pointer;}
+  .edit-header span{font-size:13px;font-weight:800;}
+  .edit-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px;}
+  .edit-cat-row{display:flex;align-items:center;gap:10px;}
+  .edit-cat-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--bg);box-shadow:var(--shadow-in);}
+  .edit-body label{font-size:11px;font-weight:800;color:var(--ink-soft);display:flex;flex-direction:column;gap:6px;}
+  .edit-body input{font-family:inherit;font-size:13px;border:none;border-radius:11px;padding:9px 12px;box-shadow:var(--shadow-in);background:transparent;color:var(--ink);}
+  .edit-actions{display:flex;gap:8px;padding:0 20px 18px;}
+  .edit-actions button{flex:1;border:none;border-radius:13px;padding:11px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;}
+  .danger-btn{background:var(--bg);color:var(--danger);box-shadow:var(--shadow-in);}
+  .primary-btn{background:linear-gradient(135deg,var(--accent-money),#e0aa6f);color:#fff;box-shadow:var(--shadow-out);}
+
+  .content-grid{margin-top:14px;display:grid;grid-template-columns:1fr 260px;gap:16px;}
+  .slime-card{background:var(--panel);box-shadow:var(--shadow-out);border-radius:24px;min-height:200px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:12px;}
+  .side-card{background:var(--panel);box-shadow:var(--shadow-out);border-radius:20px;min-height:200px;}
+
+  .phone-frame{width:375px;height:680px;margin:0 auto;background:var(--panel);border-radius:36px;box-shadow:var(--shadow-out);overflow:hidden;position:relative;border:6px solid var(--panel);}
+  .phone-scroll{height:100%;overflow-y:auto;}
+  .phone-header{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;}
+  .phone-body{padding:14px 16px 24px;}
+  .phone-inline-panel{margin:0 16px;}
+</style>
+</head>
+<body>
+
+<h1>By-date 花費紀錄 · C 版「原地展開」（挑戰目前定案的替代方案）</h1>
+<p class="note">跟已定案的方向不同：不用 popover／bottom sheet，桌面和手機都用同一套「點擊往下展開」的 inline 面板，把下面內容往下推。好處是桌面/手機只要維護一套邏輯；壞處是展開時會把「史萊姆本體」推到畫面下方，桌面版尤其明顯，且跟 Notion/Linear 那種「浮層」體感不同。</p>
+<p class="warn">⚠️ 這版是拿來比較用的，不是原本 doc 定案的方向，只是想讓你評估一下要不要換成更簡單的做法。</p>
+
+<div class="demo-label">🖥️ 桌面版：點日期 pill 往下展開</div>
+<div class="desktop-wrap">
+  <div class="header-card">
+    <div class="left">
+      <button class="back-btn">‹ 返回</button>
+      <button id="d-pill" class="date-pill">
+        <span class="pill-icon">📅</span>
+        <span class="pill-label" id="d-date-label">今天・9/28</span>
+        <span class="pill-chevron">⌄</span>
+        <span class="pill-badge" id="d-badge">2筆 · $540</span>
+      </button>
+    </div>
+    <div class="right">
+      <button class="add-entry-btn">＋ 新增記帳</button>
+      <div class="gold-pill">🪙 3,200</div>
+      <div class="icon-btn">⚙️</div>
+    </div>
+  </div>
+
+  <div id="d-inline" class="inline-panel">
+    <div id="d-panel" class="slide-panel">
+      <div class="view list-view">
+        <div class="date-nav">
+          <button data-nav="-1">‹</button>
+          <span id="d-date-label-2">今天・9/28</span>
+          <button data-nav="1">›</button>
+        </div>
+        <div id="d-list" class="record-list"></div>
+      </div>
+      <div class="view edit-view">
+        <div class="edit-header">
+          <button class="back-icon" data-back="d">‹</button>
+          <span>編輯紀錄</span>
+        </div>
+        <div class="edit-body">
+          <div class="edit-cat-row">
+            <span id="d-edit-icon" class="edit-cat-icon"></span>
+            <span id="d-edit-cat"></span>
+          </div>
+          <label>金額 <input id="d-edit-amount" type="number" /></label>
+          <label>備註 <input id="d-edit-note" type="text" /></label>
+        </div>
+        <div class="edit-actions">
+          <button class="danger-btn">刪除</button>
+          <button class="primary-btn">儲存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="slime-card">史萊姆本體（展開面板時會被推下去）</div>
+    <div class="side-card"></div>
+  </div>
+</div>
+
+<div class="demo-label">📱 手機版：同一套 inline 展開</div>
+<div class="phone-frame">
+  <div class="phone-scroll">
+    <div class="phone-header">
+      <button id="m-pill" class="date-pill">
+        <span class="pill-icon">📅</span>
+        <span class="pill-label">今天・9/28</span>
+        <span class="pill-chevron">⌄</span>
+        <span class="pill-badge">2筆 · $540</span>
+      </button>
+      <div class="icon-btn">⚙️</div>
+    </div>
+
+    <div id="m-inline" class="inline-panel phone-inline-panel">
+      <div id="m-panel" class="slide-panel">
+        <div class="view list-view">
+          <div class="date-nav">
+            <button data-nav="-1">‹</button>
+            <span id="m-date-label">今天・9/28</span>
+            <button data-nav="1">›</button>
+          </div>
+          <div id="m-list" class="record-list"></div>
+        </div>
+        <div class="view edit-view">
+          <div class="edit-header">
+            <button class="back-icon" data-back="m">‹</button>
+            <span>編輯紀錄</span>
+          </div>
+          <div class="edit-body">
+            <div class="edit-cat-row">
+              <span id="m-edit-icon" class="edit-cat-icon"></span>
+              <span id="m-edit-cat"></span>
+            </div>
+            <label>金額 <input id="m-edit-amount" type="number" /></label>
+            <label>備註 <input id="m-edit-note" type="text" /></label>
+          </div>
+          <div class="edit-actions">
+            <button class="danger-btn">刪除</button>
+            <button class="primary-btn">儲存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-body">
+      <div style="height:220px;border:3px dashed var(--line);border-radius:24px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:12px;">史萊姆畫面</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DATA = [
+    { date:'9/26', weekday:'週六', records:[
+      { icon:'🍱', cat:'飲食', note:'午餐', amount:180, color:'var(--accent-food)' },
+      { icon:'🚌', cat:'交通', note:'', amount:60, color:'var(--accent-exercise)' },
+    ]},
+    { date:'9/27', weekday:'週日', records:[
+      { icon:'🎉', cat:'社交', note:'朋友聚餐', amount:540, color:'var(--accent-diary)' },
+    ]},
+    { date:'9/28', weekday:'週一', records:[
+      { icon:'☕', cat:'飲食', note:'咖啡', amount:120, color:'var(--accent-food)' },
+      { icon:'📚', cat:'學習/3C', note:'', amount:420, color:'var(--accent-money)' },
+    ]},
+  ];
+  let idx = DATA.length - 1;
+
+  function label(){
+    const d = DATA[idx];
+    return idx === DATA.length - 1 ? `今天・${d.date}` : `${d.date}・${d.weekday}`;
+  }
+
+  function render(prefix){
+    const d = DATA[idx];
+    const l = label();
+    document.querySelectorAll(`#${prefix}-date-label, #${prefix}-date-label-2`).forEach(el => { if (el) el.textContent = l; });
+    const total = d.records.reduce((s, r) => s + r.amount, 0);
+    const badge = document.getElementById(`${prefix}-badge`);
+    if (badge) badge.textContent = d.records.length ? `${d.records.length}筆 · $${total.toLocaleString()}` : '無紀錄';
+
+    const list = document.getElementById(`${prefix}-list`);
+    list.innerHTML = d.records.length
+      ? d.records.map(r => `
+        <button class="record-row" data-icon="${r.icon}" data-cat="${r.cat}" data-note="${r.note}" data-amount="${r.amount}">
+          <span class="record-icon" style="color:${r.color};background:color-mix(in srgb, ${r.color} 18%, transparent)">${r.icon}</span>
+          <span class="record-info"><b>${r.cat}</b><small>${r.note || '－'}</small></span>
+          <span class="record-amount">-$${r.amount}</span>
+        </button>`).join('')
+      : `<div class="empty-state">這天還沒有記帳紀錄</div>`;
+    list.querySelectorAll('.record-row').forEach(row => {
+      row.addEventListener('click', () => openEdit(prefix, row.dataset));
+    });
+  }
+
+  function openEdit(prefix, data){
+    document.getElementById(`${prefix}-panel`).classList.add('showing-edit');
+    document.getElementById(`${prefix}-edit-icon`).textContent = data.icon;
+    document.getElementById(`${prefix}-edit-cat`).textContent = data.cat;
+    document.getElementById(`${prefix}-edit-amount`).value = data.amount;
+    document.getElementById(`${prefix}-edit-note`).value = data.note;
+  }
+  function closeEdit(prefix){
+    document.getElementById(`${prefix}-panel`).classList.remove('showing-edit');
+  }
+
+  function shiftDate(dir){
+    idx = Math.min(DATA.length - 1, Math.max(0, idx + dir));
+    render('d'); render('m');
+  }
+
+  document.querySelectorAll('[data-nav]').forEach(btn => {
+    btn.addEventListener('click', () => shiftDate(parseInt(btn.dataset.nav, 10)));
+  });
+  document.querySelectorAll('[data-back]').forEach(btn => {
+    btn.addEventListener('click', () => closeEdit(btn.dataset.back));
+  });
+
+  const dPill = document.getElementById('d-pill');
+  const dInline = document.getElementById('d-inline');
+  dPill.addEventListener('click', () => {
+    dInline.classList.toggle('open');
+    dPill.classList.toggle('open');
+  });
+
+  const mPill = document.getElementById('m-pill');
+  const mInline = document.getElementById('m-inline');
+  mPill.addEventListener('click', () => {
+    mInline.classList.toggle('open');
+    mPill.classList.toggle('open');
+  });
+
+  render('d'); render('m');
+</script>
+</body>
+</html>

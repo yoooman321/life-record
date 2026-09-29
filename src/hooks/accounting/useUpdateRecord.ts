@@ -1,14 +1,14 @@
-import { createRecord } from '@/api';
+import { updateRecord } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function useCreateRecord() {
+export function useUpdateRecord() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createRecord,
+    mutationFn: updateRecord,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [queryKeys.accounting.period],
+        queryKey: [queryKeys.accounting.records],
       });
     },
   });
