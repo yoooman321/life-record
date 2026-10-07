@@ -1,4 +1,9 @@
-import type { DurationType, RecordItemRead, RecordType } from './accounting';
+import type {
+  DurationType,
+  JobType,
+  RecordItemRead,
+  RecordType,
+} from './accounting';
 import type { SlimeStatName } from './slime';
 
 // export interface
@@ -43,4 +48,15 @@ export type PeriodItem = {
   stats: Record<SlimeStatName, number>;
   endedAt: string;
   startedAt: string;
+};
+
+export type SlimeItem = {
+  id: number;
+  profession: JobType;
+  name: string;
+};
+
+export type EditSlimeItem = {
+  id: number;
+  name: string;
 };

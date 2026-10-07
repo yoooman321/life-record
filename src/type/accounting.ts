@@ -58,3 +58,5 @@ export type ImageItem =
     };
 
 export type DurationType = 'oneday' | 'week' | 'month' | 'custom';
+
+export type JobType = 'warrior' | 'bowman' | 'thief' | 'wizard' | 'paladin';

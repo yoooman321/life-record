@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>商店示意圖 · B 版（中度遊戲感，深色預覽區）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f1ea; --panel:#fffdfa; --ink:#3a352f; --ink-soft:#928c80; --line:#eae3d7;
+    --accent-money:#c98a4b; --accent-body:#4f9d8a;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+    --game-navy:#2c3352; --game-navy-deep:#1c2140; --game-gold:#f2b53d;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:32px 20px 60px;}
+  .note{max-width:420px;margin:0 auto 20px;font-size:12px;color:var(--ink-soft);background:var(--panel);padding:10px 16px;border-radius:14px;box-shadow:var(--shadow-out);}
+  .num{font-family:"Fredoka",sans-serif;}
+
+  .phone{max-width:420px;margin:0 auto;background:var(--panel);border-radius:28px;box-shadow:var(--shadow-out);overflow:hidden;}
+
+  .header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;}
+  .currency{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:100px;padding:7px 14px;font-weight:700;color:var(--accent-money);font-size:13px;font-family:"Fredoka",sans-serif;}
+  .close{width:32px;height:32px;border-radius:50%;background:var(--bg);box-shadow:var(--shadow-in);display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:14px;}
+
+  /* 深色預覽區，模擬 Phaser 畫布會放的位置 */
+  .preview{
+    margin:0 18px 18px;border-radius:22px;padding:26px 16px 18px;
+    background:radial-gradient(circle at 50% 30%, var(--game-navy) 0%, var(--game-navy-deep) 75%);
+    box-shadow:0 10px 24px -8px rgba(28,33,64,.45);
+    display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;
+  }
+  .glow{position:absolute;top:10%;left:50%;width:180px;height:180px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle, rgba(242,181,61,.35), transparent 70%);}
+  .slime-wrap{position:relative;width:150px;height:130px;z-index:1;}
+  .slime{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:150px;height:110px;border-radius:50% 50% 46% 46%/60% 60% 40% 40%;background:var(--accent-body);box-shadow:0 6px 16px rgba(0,0,0,.35);}
+  .slime .eye{position:absolute;width:10px;height:10px;border-radius:50%;background:#1c2140;top:44px;}
+  .slime .eye.l{left:48px;} .slime .eye.r{right:48px;}
+  .slime .shine{position:absolute;width:24px;height:14px;border-radius:50%;background:rgba(255,255,255,.5);top:22px;left:34px;}
+  .equip{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:40px;display:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));}
+  .equip.show{display:block;}
+  .preview .label{margin-top:14px;font-size:12px;font-weight:600;color:#c9cee0;z-index:1;font-family:"Fredoka",sans-serif;}
+
+  .grid-title{padding:0 18px 8px;font-size:13px;font-weight:800;color:var(--ink-soft);font-family:"Fredoka",sans-serif;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 18px 20px;max-height:280px;overflow-y:auto;}
+  .card{background:var(--bg);border-radius:16px;box-shadow:var(--shadow-in);padding:10px 6px 8px;text-align:center;cursor:pointer;border:2px solid transparent;position:relative;}
+  .card.selected{background:var(--panel);box-shadow:0 0 0 2px var(--game-gold), var(--shadow-out);}
+  .card .rarity{position:absolute;top:4px;left:6px;font-size:9px;font-weight:800;color:#fff;background:var(--game-navy);border-radius:6px;padding:1px 5px;font-family:"Fredoka",sans-serif;}
+  .card .ic{font-size:26px;margin:6px 0 4px;}
+  .card .name{font-size:11px;font-weight:700;}
+  .card .price{margin-top:4px;font-size:11px;font-weight:800;color:var(--accent-money);font-family:"Fredoka",sans-serif;}
+  .card .owned-tag{margin-top:4px;font-size:10px;font-weight:700;color:var(--accent-body);}
+
+  .buy-bar{display:flex;gap:10px;padding:14px 18px 20px;}
+  .buy-btn{flex:1;border:none;border-radius:15px;padding:12px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--game-gold),var(--accent-money));box-shadow:var(--shadow-out);}
+</style>
+</head>
+<body>
+<div class="note">B 版：史萊姆預覽區換成深色場景（呼應參考圖的氛圍），商品卡片加稀有度標籤，其他區塊（商品格子、按鈕）維持現有淺色風格，深淺兩種調性並存</div>
+
+<div class="phone">
+  <div class="header">
+    <div class="currency">🪙 <span class="num">1,280</span></div>
+    <div class="close">✕</div>
+  </div>
+
+  <div class="preview">
+    <div class="glow"></div>
+    <div class="slime-wrap">
+      <div class="slime">
+        <div class="eye l"></div><div class="eye r"></div>
+        <div class="shine"></div>
+      </div>
+      <div class="equip" id="equipIcon">🎩</div>
+    </div>
+    <div class="label" id="previewLabel">尚未裝備任何道具</div>
+  </div>
+
+  <div class="grid-title">裝扮商店</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="buy-bar">
+    <button class="buy-btn" id="buyBtn">購買 · 300</button>
+  </div>
+</div>
+
+<script>
+  const ITEMS = [
+    { id: 1, icon: '🎩', name: '紳士帽', price: 300, owned: false, rarity: 'S' },
+    { id: 2, icon: '👑', name: '皇冠', price: 800, owned: false, rarity: 'SS' },
+    { id: 3, icon: '🎀', name: '蝴蝶結', price: 150, owned: true, rarity: 'A' },
+    { id: 4, icon: '🕶️', name: '墨鏡', price: 220, owned: false, rarity: 'S' },
+    { id: 5, icon: '🧣', name: '圍巾', price: 180, owned: false, rarity: 'A' },
+    { id: 6, icon: '🌟', name: '星星光環', price: 500, owned: false, rarity: 'SS' },
+  ];
+  let selectedId = null;
+
+  const grid = document.getElementById('grid');
+  const equipIcon = document.getElementById('equipIcon');
+  const previewLabel = document.getElementById('previewLabel');
+  const buyBtn = document.getElementById('buyBtn');
+
+  function render(){
+    grid.innerHTML = ITEMS.map(item => `
+      <div class="card ${item.id === selectedId ? 'selected' : ''}" data-id="${item.id}">
+        <div class="rarity">${item.rarity}</div>
+        <div class="ic">${item.icon}</div>
+        <div class="name">${item.name}</div>
+        ${item.owned ? '<div class="owned-tag">已擁有</div>' : `<div class="price">🪙 ${item.price}</div>`}
+      </div>
+    `).join('');
+    grid.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => {
+        selectedId = Number(card.dataset.id);
+        const item = ITEMS.find(i => i.id === selectedId);
+        equipIcon.textContent = item.icon;
+        equipIcon.classList.add('show');
+        previewLabel.textContent = `預覽：${item.name}`;
+        buyBtn.textContent = item.owned ? '裝備' : `購買 · ${item.price}`;
+        render();
+      });
+    });
+  }
+  render();
+</script>
+</body>
+</html>

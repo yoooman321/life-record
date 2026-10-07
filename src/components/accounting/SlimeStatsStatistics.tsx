@@ -62,7 +62,10 @@ export default function SlimeStatsStatistics({
                 className="h-full rounded-lg"
                 style={{
                   background: displayedAbilities?.[ability]?.color,
-                  width: `${((displayedAbilities?.[ability]?.value ?? 0) / totalValue) * 100}%`,
+                  width:
+                    totalValue === 0
+                      ? '0%'
+                      : `${((displayedAbilities?.[ability]?.value ?? 0) / totalValue) * 100}%`,
                 }}
               />
             </div>

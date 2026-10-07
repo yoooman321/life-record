@@ -1,6 +1,14 @@
 import type { RecordItemRead } from '@/type';
 import { useCategories } from './useCategories';
 
+type RecordCategoryData = {
+  color: string | undefined;
+  iconId: number | undefined;
+  name: string | undefined;
+};
+
+export type DisplayedRecord = RecordItemRead & { category: RecordCategoryData };
+
 type UseDisplayRecordsProps = {
   records: RecordItemRead[];
 };

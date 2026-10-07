@@ -9,3 +9,6 @@ export * from './accounting/useDisplayRecords';
 export * from './accounting/useCreatePeriod';
 export * from './accounting/usePeriodRecord';
 export * from './accounting/useSlimeStat';
+export * from './accounting/useCategoryAbility';
+export * from './accounting/useCreateSlime';
+export * from './accounting/useEditSlime';

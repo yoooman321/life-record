@@ -8,6 +8,8 @@ import type {
   UpdateRecordItem,
   CreatePeriodParams,
   PeriodItem,
+  SlimeItem,
+  EditSlimeItem,
 } from '@/type';
 import type { SlimeStatItem } from '@/type/slime';
 import { api } from '@/utils/apiFetch';
@@ -65,4 +67,24 @@ export const createPeriod = async (data: CreatePeriodParams): Promise<void> => {
 
 export const getSlimeStatSetting = async (): Promise<SlimeStatItem[]> => {
   return api.get('/accounting/stat');
+};
+
+export const finishCurrentPeriod = async (): Promise<SlimeItem> => {
+  return api.put('/accounting/period/current/end');
+};
+
+export const editSlime = async (body: EditSlimeItem): Promise<SlimeItem> => {
+  return api.put('/accounting/slime', body);
+};
+
+export const mockEndPeriodApi = (): Promise<SlimeItem> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        id: 1,
+        profession: 'thief',
+        name: '戰士史萊姆',
+      }); // 或隨機挑一個職業，方便測試不同結果
+    }, 1000); // 模擬 API 要等 2 秒
+  });
 };

@@ -153,7 +153,6 @@ export default function SlimeSetupModal({ onClose }: { onClose: () => void }) {
                 }}
                 type="number"
                 min={1}
-                defaultValue={14}
                 className="w-13 rounded-[9px] px-2 py-1.5 text-center text-xs text-ink shadow-in outline-none"
               />
               <span className="text-[11px] text-ink-soft">天</span>

@@ -8,3 +8,5 @@ export const slimeStatNameMapping: Record<SlimeStatName, string> = {
   luk: '幸運',
   power: '體力',
 };
+
+export const MIN_EARLY_END_AMOUNT = 4;

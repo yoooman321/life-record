@@ -8,6 +8,7 @@ import { getFormattedDate, getWeekDay } from '@/utils/date';
 import { useEffect, useRef, useState } from 'react';
 import type { RecordItemRead, UpdateRecordItem } from '@/type';
 import EntryForm, { type EntryFormData } from './EntryForm';
+import RecordItem from './RecordItem';
 
 const isSameTags = (a: number[], b: number[]) => {
   if (a.length !== b.length) return false;
@@ -192,39 +193,7 @@ export default function ByDateRecords() {
               <div className="max-h-70 overflow-y-auto p-2">
                 {displayedRecords && displayedRecords.length > 0 ? (
                   displayedRecords.map((record) => (
-                    <button
-                      key={record.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedRecord(record);
-                      }}
-                      className="flex w-full items-center gap-2.5 rounded-[14px] px-2 py-2.5 text-left hover:bg-bg"
-                    >
-                      <span
-                        className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full text-sm"
-                        style={{
-                          color: record.category.color,
-                          backgroundColor: `color-mix(in srgb, ${record.category.color} 18%, transparent)`,
-                        }}
-                      >
-                        {record.category.iconId
-                          ? iconMapping[record.category.iconId]
-                          : null}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[13px] font-bold text-ink">
-                          {record.category.name}
-                        </span>
-                        <span className="block truncate text-xs text-ink-soft">
-                          {record.note || ''}
-                        </span>
-                      </span>
-                      <span
-                        className={`shrink-0 text-[13px] font-bold ${record.recordType === 'expense' ? 'text-accent-food' : 'text-accent-body'}`}
-                      >
-                        ${record.amount}
-                      </span>
-                    </button>
+                    <RecordItem record={record} key={`by-date-${record.id}`} />
                   ))
                 ) : (
                   <div className="px-4 py-8 text-center text-xs text-ink-soft">

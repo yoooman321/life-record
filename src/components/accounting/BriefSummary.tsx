@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import AddEntryModal from './AddEntryModal';
 import ByDateRecords from './ByDateRecords';
 
-export default function BriefSummary() {
-  const [openModal, setOpenModal] = useState(false);
+type BriefSummaryProps = {
+  onOpen: () => void;
+};
+
+export default function BriefSummary({ onOpen }: BriefSummaryProps) {
   return (
     <>
       <div className="mb-6 flex items-center justify-between rounded-[20px] bg-panel px-6 py-4.5 shadow-out">
@@ -29,31 +31,12 @@ export default function BriefSummary() {
           <button
             type="button"
             className="flex items-center gap-1.5 rounded-full bg-linear-to-r from-accent-money to-[#e0aa6f] px-4 py-2 text-[13px] font-extrabold text-white shadow-out"
-            onClick={() => {
-              setOpenModal(true);
-            }}
+            onClick={onOpen}
           >
             ＋ 新增記帳
           </button>
-          <div className="rounded-full bg-bg px-4 py-2 text-[13px] font-extrabold text-accent-money">
-            🪙 1,280
-          </div>
-          <button
-            type="button"
-            aria-label="設定"
-            className="flex h-9.5 w-9.5 items-center justify-center rounded-full bg-bg text-[15px] text-ink-soft shadow-in"
-          >
-            ⚙️
-          </button>
         </div>
       </div>
-      {openModal && (
-        <AddEntryModal
-          onClose={() => {
-            setOpenModal(false);
-          }}
-        />
-      )}
     </>
   );
 }

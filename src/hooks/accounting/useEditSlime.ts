@@ -1,11 +1,11 @@
-import { createPeriod } from '@/api';
+import { editSlime } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function useCreatePeriod() {
+export function useEditSlime() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createPeriod,
+    mutationFn: editSlime,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [queryKeys.accounting.period],

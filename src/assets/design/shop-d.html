@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>商店示意圖 · D 版（淺色底 + 稀有度 + 粒子效果）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f1ea; --panel:#fffdfa; --ink:#3a352f; --ink-soft:#928c80; --line:#eae3d7;
+    --accent-money:#c98a4b; --accent-food:#e07856; --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9; --accent-diary:#b06a9e;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:32px 20px 60px;}
+  .note{max-width:420px;margin:0 auto 20px;font-size:12px;color:var(--ink-soft);background:var(--panel);padding:10px 16px;border-radius:14px;box-shadow:var(--shadow-out);}
+  .num{font-family:"Fredoka",sans-serif;}
+
+  .phone{max-width:420px;margin:0 auto;background:var(--panel);border-radius:28px;box-shadow:var(--shadow-out);overflow:hidden;}
+
+  .header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;}
+  .currency{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:100px;padding:7px 14px;font-weight:700;color:var(--accent-money);font-size:13px;}
+  .close{width:32px;height:32px;border-radius:50%;background:var(--bg);box-shadow:var(--shadow-in);display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:14px;}
+
+  /* 預覽區：維持淺色底，用粒子（漂浮的小星星/光點）加一點動態感，不用整個換深色場景 */
+  .preview{margin:0 18px 18px;border-radius:22px;background:var(--bg);box-shadow:var(--shadow-in);padding:24px 16px;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;}
+  .particle{position:absolute;color:var(--accent-money);opacity:.7;animation:float 3.6s ease-in-out infinite;}
+  .particle.p1{top:16%;left:18%;font-size:12px;animation-delay:0s;}
+  .particle.p2{top:22%;right:16%;font-size:9px;animation-delay:.8s;color:var(--accent-exercise);}
+  .particle.p3{bottom:28%;left:12%;font-size:10px;animation-delay:1.6s;color:var(--accent-diary);}
+  .particle.p4{top:10%;right:32%;font-size:8px;animation-delay:2.3s;}
+  @keyframes float{
+    0%,100%{transform:translateY(0) scale(1);opacity:.3;}
+    50%{transform:translateY(-10px) scale(1.15);opacity:.9;}
+  }
+
+  .slime-wrap{position:relative;width:150px;height:130px;z-index:1;}
+  .slime{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:150px;height:110px;border-radius:50% 50% 46% 46%/60% 60% 40% 40%;background:var(--accent-body);}
+  .slime .eye{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--ink);top:44px;}
+  .slime .eye.l{left:48px;} .slime .eye.r{right:48px;}
+  .slime .shine{position:absolute;width:24px;height:14px;border-radius:50%;background:rgba(255,255,255,.5);top:22px;left:34px;}
+  .equip{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:40px;display:none;filter:drop-shadow(0 3px 4px rgba(58,53,47,.25));}
+  .equip.show{display:block;}
+  .preview .label{margin-top:12px;font-size:12px;font-weight:700;color:var(--ink-soft);z-index:1;}
+
+  .grid-title{padding:0 18px 8px;font-size:13px;font-weight:800;color:var(--ink-soft);}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 18px 20px;max-height:300px;overflow-y:auto;}
+  .card{background:var(--bg);border-radius:16px;box-shadow:var(--shadow-in);padding:10px 6px 8px;text-align:center;cursor:pointer;border:2px solid transparent;position:relative;}
+  .card.selected{background:var(--panel);box-shadow:var(--shadow-out);border-color:var(--accent-money);}
+  .card .rarity{position:absolute;top:5px;left:6px;font-size:9px;font-weight:800;color:#fff;border-radius:6px;padding:1px 5px;font-family:"Fredoka",sans-serif;}
+  .card .rarity.ss{background:var(--accent-money);}
+  .card .rarity.s{background:var(--accent-exercise);}
+  .card .rarity.a{background:var(--accent-body);}
+  .card .ic{font-size:26px;margin:8px 0 4px;}
+  .card .name{font-size:11px;font-weight:700;}
+  .card .price{margin-top:4px;font-size:11px;font-weight:800;color:var(--accent-money);font-family:"Fredoka",sans-serif;}
+  .card .owned-tag{margin-top:4px;font-size:10px;font-weight:700;color:var(--accent-body);}
+
+  .buy-bar{display:flex;gap:10px;padding:14px 18px 20px;}
+  .buy-btn{flex:1;border:none;border-radius:15px;padding:12px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--accent-money),#e0aa6f);box-shadow:var(--shadow-out);}
+</style>
+</head>
+<body>
+<div class="note">D 版：綜合意見——維持 A 版的淺色極簡底色，商品格子加稀有度徽章（顏色沿用現有的強調色分級：SS=金色／S=藍色／A=綠色，沒有另外引入新顏色），預覽區加幾顆會飄動閃爍的粒子點綴，不用整個換成深色場景</div>
+
+<div class="phone">
+  <div class="header">
+    <div class="currency">🪙 <span class="num">1,280</span></div>
+    <div class="close">✕</div>
+  </div>
+
+  <div class="preview">
+    <span class="particle p1">✦</span>
+    <span class="particle p2">✦</span>
+    <span class="particle p3">✦</span>
+    <span class="particle p4">✦</span>
+    <div class="slime-wrap">
+      <div class="slime">
+        <div class="eye l"></div><div class="eye r"></div>
+        <div class="shine"></div>
+      </div>
+      <div class="equip" id="equipIcon">🎩</div>
+    </div>
+    <div class="label" id="previewLabel">尚未裝備任何道具</div>
+  </div>
+
+  <div class="grid-title">裝扮商店</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="buy-bar">
+    <button class="buy-btn" id="buyBtn">購買 · 300</button>
+  </div>
+</div>
+
+<script>
+  const ITEMS = [
+    { id: 1, icon: '🎩', name: '紳士帽', price: 300, owned: false, rarity: 'S' },
+    { id: 2, icon: '👑', name: '皇冠', price: 800, owned: false, rarity: 'SS' },
+    { id: 3, icon: '🎀', name: '蝴蝶結', price: 150, owned: true, rarity: 'A' },
+    { id: 4, icon: '🕶️', name: '墨鏡', price: 220, owned: false, rarity: 'S' },
+    { id: 5, icon: '🧣', name: '圍巾', price: 180, owned: false, rarity: 'A' },
+    { id: 6, icon: '🌟', name: '星星光環', price: 500, owned: false, rarity: 'SS' },
+  ];
+  let selectedId = null;
+
+  const grid = document.getElementById('grid');
+  const equipIcon = document.getElementById('equipIcon');
+  const previewLabel = document.getElementById('previewLabel');
+  const buyBtn = document.getElementById('buyBtn');
+
+  function render(){
+    grid.innerHTML = ITEMS.map(item => `
+      <div class="card ${item.id === selectedId ? 'selected' : ''}" data-id="${item.id}">
+        <div class="rarity ${item.rarity.toLowerCase()}">${item.rarity}</div>
+        <div class="ic">${item.icon}</div>
+        <div class="name">${item.name}</div>
+        ${item.owned ? '<div class="owned-tag">已擁有</div>' : `<div class="price">🪙 ${item.price}</div>`}
+      </div>
+    `).join('');
+    grid.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => {
+        selectedId = Number(card.dataset.id);
+        const item = ITEMS.find(i => i.id === selectedId);
+        equipIcon.textContent = item.icon;
+        equipIcon.classList.add('show');
+        previewLabel.textContent = `預覽：${item.name}`;
+        buyBtn.textContent = item.owned ? '裝備' : `購買 · ${item.price}`;
+        render();
+      });
+    });
+  }
+  render();
+</script>
+</body>
+</html>
