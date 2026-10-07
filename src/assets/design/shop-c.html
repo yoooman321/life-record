@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>商店示意圖 · C 版（重度遊戲感，貼近參考圖）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Bungee&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-soft:#a9b0c9; --accent-money:#f2b53d; --accent-body:#4f9d8a;
+    --navy:#2c3352; --navy-deep:#171b34; --navy-light:#3a4270; --gold:#f2b53d;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Fredoka","Noto Sans TC",sans-serif;background:#e7e2d8;color:#fff;min-height:100vh;padding:32px 20px 60px;}
+  .note{max-width:420px;margin:0 auto 20px;font-size:12px;color:#5a5548;background:#fff;padding:10px 16px;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.08);}
+  .title-font{font-family:"Bungee",sans-serif;letter-spacing:.5px;}
+
+  .phone{
+    max-width:420px;margin:0 auto;border-radius:28px;overflow:hidden;
+    background:linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
+    box-shadow:0 20px 40px -12px rgba(23,27,52,.5);
+  }
+
+  .header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;}
+  .currency{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.25);border:2px solid var(--gold);border-radius:100px;padding:6px 14px;font-weight:700;color:var(--gold);font-size:13px;}
+  .close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+
+  /* 預覽區：柱子/拱門用漸層條模擬，呼應參考圖的場景感 */
+  .preview{
+    margin:0 18px 18px;border-radius:22px;padding:26px 16px 18px;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 50% 25%, var(--navy-light) 0%, var(--navy-deep) 80%);
+    border:2px solid rgba(242,181,61,.35);
+  }
+  .pillar{position:absolute;top:0;bottom:0;width:26px;background:linear-gradient(180deg, rgba(242,181,61,.25), rgba(242,181,61,.05));}
+  .pillar.l{left:8px;} .pillar.r{right:8px;}
+  .glow{position:absolute;top:8%;left:50%;width:190px;height:190px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle, rgba(242,181,61,.4), transparent 70%);}
+  .sparkle{position:absolute;font-size:12px;color:var(--gold);opacity:.85;}
+  .sparkle.s1{top:18%;left:22%;} .sparkle.s2{top:30%;right:20%;} .sparkle.s3{bottom:20%;left:16%;}
+
+  .slime-wrap{position:relative;width:150px;height:130px;margin:0 auto;z-index:1;}
+  .slime{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:150px;height:110px;border-radius:50% 50% 46% 46%/60% 60% 40% 40%;background:var(--accent-body);box-shadow:0 8px 20px rgba(0,0,0,.4);}
+  .slime .eye{position:absolute;width:10px;height:10px;border-radius:50%;background:#171b34;top:44px;}
+  .slime .eye.l{left:48px;} .slime .eye.r{right:48px;}
+  .slime .shine{position:absolute;width:24px;height:14px;border-radius:50%;background:rgba(255,255,255,.5);top:22px;left:34px;}
+  .equip{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:40px;display:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));}
+  .equip.show{display:block;}
+  .preview .label{margin-top:14px;text-align:center;font-size:12px;font-weight:600;color:var(--ink-soft);z-index:1;position:relative;}
+
+  .grid-title{padding:0 18px 8px;font-size:14px;color:var(--gold);}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 18px 20px;max-height:280px;overflow-y:auto;}
+  .card{background:linear-gradient(160deg, var(--navy-light), var(--navy));border-radius:14px;padding:10px 6px 8px;text-align:center;cursor:pointer;border:2px solid rgba(255,255,255,.08);position:relative;}
+  .card.selected{border-color:var(--gold);box-shadow:0 0 0 2px rgba(242,181,61,.35), 0 4px 14px rgba(242,181,61,.25);}
+  .card .rarity{position:absolute;top:4px;left:6px;font-size:9px;color:#fff;background:linear-gradient(135deg,#e2574c,#c9584b);border-radius:6px;padding:1px 5px;}
+  .card .ic{font-size:26px;margin:6px 0 4px;}
+  .card .name{font-size:11px;font-weight:600;color:#e8eaf5;font-family:"Noto Sans TC",sans-serif;}
+  .card .price{margin-top:4px;font-size:11px;color:var(--gold);}
+  .card .owned-tag{margin-top:4px;font-size:10px;color:var(--accent-body);}
+
+  .buy-bar{display:flex;gap:10px;padding:14px 18px 20px;}
+  .buy-btn{flex:1;border:none;border-radius:15px;padding:13px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:14px;color:#3a2c0a;background:linear-gradient(135deg,#ffdf8a,var(--gold));box-shadow:0 6px 16px -4px rgba(242,181,61,.6);}
+</style>
+</head>
+<body>
+<div class="note">C 版：整個 modal 都改成深色遊戲場景風格（不只預覽區），柱子/光暈/星星點綴呼應參考圖，商品卡片改深色漸層＋金色邊框，標題用 Bungee 字體。這版風格跟現有 App 的淺色極簡風落差最大，是否只在商店這個情境用「深色遊戲皮膚」、其他頁面維持現狀，值得跟你確認</div>
+
+<div class="phone">
+  <div class="header">
+    <div class="currency">🪙 <span>1,280</span></div>
+    <div class="close">✕</div>
+  </div>
+
+  <div class="preview">
+    <div class="pillar l"></div>
+    <div class="pillar r"></div>
+    <div class="glow"></div>
+    <span class="sparkle s1">✦</span>
+    <span class="sparkle s2">✦</span>
+    <span class="sparkle s3">✦</span>
+    <div class="slime-wrap">
+      <div class="slime">
+        <div class="eye l"></div><div class="eye r"></div>
+        <div class="shine"></div>
+      </div>
+      <div class="equip" id="equipIcon">🎩</div>
+    </div>
+    <div class="label" id="previewLabel">尚未裝備任何道具</div>
+  </div>
+
+  <div class="grid-title title-font">裝扮商店</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="buy-bar">
+    <button class="buy-btn" id="buyBtn">購買 · 300</button>
+  </div>
+</div>
+
+<script>
+  const ITEMS = [
+    { id: 1, icon: '🎩', name: '紳士帽', price: 300, owned: false, rarity: 'S' },
+    { id: 2, icon: '👑', name: '皇冠', price: 800, owned: false, rarity: 'SS' },
+    { id: 3, icon: '🎀', name: '蝴蝶結', price: 150, owned: true, rarity: 'A' },
+    { id: 4, icon: '🕶️', name: '墨鏡', price: 220, owned: false, rarity: 'S' },
+    { id: 5, icon: '🧣', name: '圍巾', price: 180, owned: false, rarity: 'A' },
+    { id: 6, icon: '🌟', name: '星星光環', price: 500, owned: false, rarity: 'SS' },
+  ];
+  let selectedId = null;
+
+  const grid = document.getElementById('grid');
+  const equipIcon = document.getElementById('equipIcon');
+  const previewLabel = document.getElementById('previewLabel');
+  const buyBtn = document.getElementById('buyBtn');
+
+  function render(){
+    grid.innerHTML = ITEMS.map(item => `
+      <div class="card ${item.id === selectedId ? 'selected' : ''}" data-id="${item.id}">
+        <div class="rarity">${item.rarity}</div>
+        <div class="ic">${item.icon}</div>
+        <div class="name">${item.name}</div>
+        ${item.owned ? '<div class="owned-tag">已擁有</div>' : `<div class="price">🪙 ${item.price}</div>`}
+      </div>
+    `).join('');
+    grid.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => {
+        selectedId = Number(card.dataset.id);
+        const item = ITEMS.find(i => i.id === selectedId);
+        equipIcon.textContent = item.icon;
+        equipIcon.classList.add('show');
+        previewLabel.textContent = `預覽：${item.name}`;
+        buyBtn.textContent = item.owned ? '裝備' : `購買 · ${item.price}`;
+        render();
+      });
+    });
+  }
+  render();
+</script>
+</body>
+</html>

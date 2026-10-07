@@ -13,19 +13,22 @@
 
 ## TODO 追蹤
 
-- 對話中提到未來要做的事、或討論過但還沒做的功能/任務，主動加進 `/TODO.md`。
+- **`TODO.md` 已經搬到 `../life-record-docs/front-TODO.md`（2026-09-29 起）**，跟 schedule.md 一樣搬去跨專案共用的規劃文件那邊，方便 docs 那邊整理總 TODO。這個 session 沒有直接檔案存取權限時，讀寫前用 `@../life-record-docs/front-TODO.md` 或請使用者確認路徑。
+- 對話中提到未來要做的事、或討論過但還沒做的功能/任務，主動加進 `front-TODO.md`。
 - 不只是明確說「排進 TODO」的事，討論中隨口提到的計畫也要主動捕捉。
-- 加入前先讀 TODO.md 確認不重複；做完的項目直接打勾標記完成，不要刪除紀錄。
+- 加入前先讀 `front-TODO.md` 確認不重複；做完的項目直接打勾標記完成，不要刪除紀錄。
 
 ## Schedule 記錄
 
-- `/schedule.md` 用來記錄「每天實際做了哪些事」，跟 TODO.md（要做什麼）是不同性質的檔案，不要混在一起寫。
+- **`schedule.md` 已經搬到 `../life-record-docs/schedule.md`**（2026-09-22 起，跟前後端共用的規劃文件放在一起，見下方「分工範圍」）。這個 session 沒有直接檔案存取權限時，讀寫前用 `@../life-record-docs/schedule.md` 或請使用者確認路徑。
 - 每次對話裡完成了實質進度（新畫面、新設計決定、技術棧變更等），主動幫使用者把當天的重點加進 `schedule.md` 對應的日期底下（沒有當天的區塊就新增一個）；單純聊天討論、還沒有具體產出的部分不用記。
 - 加入前先讀 schedule.md 確認格式一致、不重複記錄同一件事。
 
 ## 分工範圍（已定案）
 
-後端實作（FastAPI、Docker、部署）已經另外在獨立的 `life-record-api` repo、由另一個 Claude Code session 帶著使用者練習。**這個 session（life-record 前端專案）只負責產品設計方向、資料模型討論、前端（React/Vite/TypeScript）技術**，不要主動接手 Docker/後端程式碼的逐行教學——那部分請使用者去問 life-record-api 那邊的 session。跨專案背景同步可透過 SendMessage 跟該 session 交換摘要。
+後端實作（FastAPI、Docker、部署）已經另外在獨立的 `life-record-api` repo、由另一個 Claude Code session（`life-record-api-ed`）帶著使用者練習。**這個 session（life-record 前端專案）只負責產品設計方向、資料模型討論、前端（React/Vite/TypeScript）技術**，不要主動接手 Docker/後端程式碼的逐行教學——那部分請使用者去問 life-record-api 那邊的 session。
+
+**跨專案共用的規劃文件（2026-09-22 起）已經搬到獨立的 `life-record-docs` 專案**（`../life-record-docs/`），包含 `bookkeeping-slime/`（記帳史萊姆的產品設計、資料庫設計）跟 `schedule.md`（跨專案進度）。這些內容不要再複製一份到這邊來維護，討論到相關主題時直接讀寫 `life-record-docs` 裡的檔案，或請使用者去那邊的 session（如果有開）討論。跨專案背景同步可透過 SendMessage 跟 `life-record-api-ed` 或 `life-record-docs` 那邊的 session 交換摘要。
 
 ## 專案資訊
 

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>培育史萊姆設定 · B 版（全頁儀式感）</title>
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#fffdfa;
+    --ink:#3a352f;
+    --ink-soft:#928c80;
+    --line:#eae3d7;
+    --accent-money:#c98a4b;
+    --accent-food:#e07856;
+    --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9;
+    --accent-diary:#b06a9e;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+  .note{position:fixed;top:16px;left:16px;font-size:12px;color:var(--ink-soft);background:var(--panel);padding:8px 14px;border-radius:100px;box-shadow:var(--shadow-out);z-index:10;max-width:80vw;}
+
+  .page{max-width:520px;margin:0 auto;padding:64px 24px 60px;text-align:center;}
+
+  .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink-soft);background:var(--bg);border-radius:100px;padding:8px 14px;border:none;font-family:inherit;cursor:pointer;margin-bottom:36px;}
+
+  .egg-wrap{position:relative;width:180px;height:180px;margin:0 auto 28px;}
+  .egg-glow{position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(201,138,75,.22),transparent 70%);opacity:0;animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.4;transform:scale(.96);}50%{opacity:.9;transform:scale(1.02);}}
+  .egg{position:relative;width:100%;height:100%;border-radius:50%;border:3px dashed var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:var(--shadow-out);}
+
+  h1{font-size:20px;margin:0 0 8px;}
+  .subtitle{font-size:13px;color:var(--ink-soft);line-height:1.7;margin:0 0 36px;}
+
+  .segmented{display:flex;gap:4px;background:var(--bg);border-radius:100px;padding:4px;margin-bottom:20px;}
+  .seg-btn{flex:1;border:none;border-radius:100px;padding:10px 4px;font-family:inherit;font-size:12.5px;font-weight:800;color:var(--ink-soft);background:transparent;cursor:pointer;}
+  .seg-btn.selected{background:var(--panel);color:var(--ink);box-shadow:var(--shadow-out);}
+
+  .stepper{display:none;align-items:center;justify-content:center;gap:16px;margin-bottom:24px;}
+  .stepper.show{display:flex;}
+  .stepper button{width:36px;height:36px;border-radius:50%;border:none;background:var(--bg);box-shadow:var(--shadow-in);color:var(--ink-soft);font-size:16px;cursor:pointer;}
+  .stepper .value{font-size:22px;font-weight:800;min-width:70px;}
+  .stepper .value span{font-size:12px;font-weight:600;color:var(--ink-soft);}
+
+  .summary{font-size:12.5px;color:var(--ink-soft);margin-bottom:32px;}
+  .summary b{color:var(--accent-money);font-weight:800;}
+
+  .start-btn{width:100%;border:none;border-radius:16px;padding:15px;font-family:inherit;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent-money),#e0aa6f);box-shadow:0 14px 28px -10px rgba(201,138,75,.55);cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="note">B 版：不是 modal，是獨立全頁的「儀式感」流程，強調開始培育這個動作的份量，適合當作首頁虛線框架點擊後的轉場</div>
+
+<div class="page">
+  <button class="back-btn">‹ 返回</button>
+
+  <div class="egg-wrap">
+    <div class="egg-glow"></div>
+    <div class="egg">🥚</div>
+  </div>
+
+  <h1>準備好培育新的史萊姆了嗎？</h1>
+  <p class="subtitle">選一個培育週期，這段期間的每一筆記帳<br/>都會即時灌注到牠的能力值裡</p>
+
+  <div class="segmented" id="segmented">
+    <button class="seg-btn" data-days="1">1 天</button>
+    <button class="seg-btn" data-days="7">一週</button>
+    <button class="seg-btn" data-days="30">一個月</button>
+    <button class="seg-btn" data-days="custom">自訂</button>
+  </div>
+
+  <div class="stepper" id="stepper">
+    <button id="minus">－</button>
+    <div class="value"><span id="stepValue">14</span> <span>天</span></div>
+    <button id="plus">＋</button>
+  </div>
+
+  <div class="summary" id="summary">請選擇培育週期</div>
+
+  <button class="start-btn">🌱 開始培育</button>
+</div>
+
+<script>
+  const segBtns = document.querySelectorAll('.seg-btn');
+  const stepper = document.getElementById('stepper');
+  const stepValue = document.getElementById('stepValue');
+  const summaryEl = document.getElementById('summary');
+  let customDays = 14;
+
+  const fmt = (d) => `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+
+  function updateSummary(days) {
+    const start = new Date();
+    const end = new Date();
+    end.setDate(start.getDate() + Number(days));
+    summaryEl.innerHTML = `培育區間 <b>${fmt(start)} － ${fmt(end)}</b>，共 ${days} 天`;
+  }
+
+  segBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      segBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const isCustom = btn.dataset.days === 'custom';
+      stepper.classList.toggle('show', isCustom);
+      updateSummary(isCustom ? customDays : btn.dataset.days);
+    });
+  });
+
+  document.getElementById('plus').addEventListener('click', () => {
+    customDays = Math.min(365, customDays + 1);
+    stepValue.textContent = customDays;
+    updateSummary(customDays);
+  });
+  document.getElementById('minus').addEventListener('click', () => {
+    customDays = Math.max(1, customDays - 1);
+    stepValue.textContent = customDays;
+    updateSummary(customDays);
+  });
+</script>
+</body>
+</html>

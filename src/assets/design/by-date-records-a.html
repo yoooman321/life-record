@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>By-date 花費紀錄 · A 版（極簡下拉）</title>
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#fffdfa;
+    --ink:#3a352f;
+    --ink-soft:#928c80;
+    --line:#eae3d7;
+    --accent-money:#c98a4b;
+    --accent-food:#e07856;
+    --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9;
+    --accent-diary:#b06a9e;
+    --danger:#c9584b;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:40px 24px 80px;}
+  h1{font-size:15px;margin:0 0 6px;}
+  .note{font-size:12px;color:var(--ink-soft);margin:0 0 24px;}
+  .demo-label{font-size:13px;font-weight:800;color:var(--ink-soft);margin:36px 0 12px;display:flex;align-items:center;gap:8px;}
+
+  /* ---- 桌面版 header ---- */
+  .desktop-wrap{position:relative;max-width:900px;}
+  .header-card{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--panel);box-shadow:var(--shadow-out);
+    border-radius:20px;padding:18px 24px;position:relative;z-index:2;
+  }
+  .header-card .left{display:flex;align-items:center;gap:16px;}
+  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink-soft);background:var(--bg);border-radius:100px;padding:8px 14px;border:none;font-family:inherit;cursor:pointer;}
+  .header-card .right{display:flex;align-items:center;gap:12px;}
+  .add-entry-btn{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--accent-money),#e0aa6f);color:#fff;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:800;box-shadow:var(--shadow-out);border:none;font-family:inherit;cursor:pointer;}
+  .gold-pill{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:100px;padding:8px 16px;font-size:13px;font-weight:800;color:var(--accent-money);}
+  .icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg);box-shadow:var(--shadow-in);font-size:15px;color:var(--ink-soft);}
+
+  /* ---- 日期 pill（入口） ---- */
+  .date-pill{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg);box-shadow:var(--shadow-in);
+    border-radius:100px;padding:8px 14px 8px 12px;border:none;font-family:inherit;cursor:pointer;
+    color:var(--ink);
+  }
+  .date-pill .pill-icon{font-size:14px;}
+  .date-pill .pill-label{font-size:13px;font-weight:800;}
+  .date-pill .pill-chevron{font-size:10px;color:var(--ink-soft);transition:transform .2s ease;}
+  .date-pill.open .pill-chevron{transform:rotate(180deg);}
+  .date-pill .pill-badge{
+    font-size:11px;font-weight:800;color:var(--accent-money);
+    background:rgba(201,138,75,.14);border-radius:100px;padding:3px 9px;
+    margin-left:2px;
+  }
+
+  /* ---- popover（錨定在 pill 下方） ---- */
+  .popover{
+    position:absolute;top:calc(100% + 10px);left:24px;width:320px;
+    background:var(--panel);border-radius:20px;box-shadow:var(--shadow-out);
+    overflow:hidden;z-index:5;
+    opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+  }
+  .popover.open{opacity:1;transform:none;pointer-events:auto;}
+
+  .slide-panel{display:flex;width:200%;transition:transform .28s ease;}
+  .slide-panel.showing-edit{transform:translateX(-50%);}
+  .view{width:50%;flex-shrink:0;}
+
+  .date-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);}
+  .date-nav button{width:28px;height:28px;border-radius:50%;border:none;background:var(--bg);color:var(--ink-soft);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .date-nav span{font-size:13px;font-weight:800;}
+
+  .record-list{padding:8px;max-height:280px;overflow-y:auto;}
+  .record-row{
+    width:100%;display:flex;align-items:center;gap:10px;
+    padding:10px 8px;border-radius:14px;border:none;background:transparent;
+    font-family:inherit;text-align:left;cursor:pointer;
+  }
+  .record-row:hover{background:var(--bg);}
+  .record-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .record-info{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .record-info b{font-size:13px;}
+  .record-info small{font-size:11px;color:var(--ink-soft);}
+  .record-amount{font-size:13px;font-weight:800;color:var(--ink);flex-shrink:0;}
+  .empty-state{padding:32px 16px;text-align:center;font-size:12px;color:var(--ink-soft);}
+
+  .edit-header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);}
+  .edit-header .back-icon{width:28px;height:28px;border-radius:50%;border:none;background:var(--bg);color:var(--ink-soft);font-size:14px;cursor:pointer;}
+  .edit-header span{font-size:13px;font-weight:800;}
+  .edit-body{padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .edit-cat-row{display:flex;align-items:center;gap:10px;}
+  .edit-cat-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--bg);box-shadow:var(--shadow-in);}
+  .edit-body label{font-size:11px;font-weight:800;color:var(--ink-soft);display:flex;flex-direction:column;gap:6px;}
+  .edit-body input{font-family:inherit;font-size:13px;border:none;border-radius:11px;padding:9px 12px;box-shadow:var(--shadow-in);background:transparent;color:var(--ink);}
+  .edit-actions{display:flex;gap:8px;padding:0 16px 16px;}
+  .edit-actions button{flex:1;border:none;border-radius:13px;padding:11px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;}
+  .danger-btn{background:var(--bg);color:var(--danger);box-shadow:var(--shadow-in);}
+  .primary-btn{background:linear-gradient(135deg,var(--accent-money),#e0aa6f);color:#fff;box-shadow:var(--shadow-out);}
+
+  /* ---- 手機版 ---- */
+  .phone-frame{
+    width:375px;height:680px;margin:0 auto;background:var(--panel);
+    border-radius:36px;box-shadow:var(--shadow-out);overflow:hidden;position:relative;
+    border:6px solid var(--panel);
+  }
+  .phone-header{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;}
+  .phone-body{padding:0 16px;}
+  .sheet-overlay{
+    position:absolute;inset:0;background:rgba(58,53,47,.4);opacity:0;pointer-events:none;
+    transition:opacity .25s ease;z-index:3;
+  }
+  .sheet-overlay.open{opacity:1;pointer-events:auto;}
+  .sheet{
+    position:absolute;left:0;right:0;bottom:0;height:62%;
+    background:var(--panel);border-radius:22px 22px 0 0;box-shadow:0 -8px 24px -6px rgba(58,53,47,.18);
+    transform:translateY(100%);transition:transform .28s ease;z-index:4;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .sheet.open{transform:translateY(0);}
+  .sheet-handle{width:36px;height:4px;border-radius:100px;background:var(--line);margin:10px auto 2px;flex-shrink:0;}
+  .sheet .slide-panel{flex:1;}
+</style>
+</head>
+<body>
+
+<h1>By-date 花費紀錄 · A 版「極簡下拉」</h1>
+<p class="note">日期 pill 只放最必要的資訊（今日 + 筆數/小計 badge），點擊彈出小巧的下拉卡片，靠 ‹ › 切換日期。桌面／手機互動機制相同，只是容器不同（popover / bottom sheet）。</p>
+
+<div class="demo-label">🖥️ 桌面版：點日期 pill</div>
+<div class="desktop-wrap">
+  <div class="header-card">
+    <div class="left">
+      <button class="back-btn">‹ 返回</button>
+      <button id="d-pill" class="date-pill">
+        <span class="pill-icon">📅</span>
+        <span class="pill-label" id="d-date-label">今天・9/28</span>
+        <span class="pill-chevron">⌄</span>
+        <span class="pill-badge" id="d-badge">2筆 · $540</span>
+      </button>
+    </div>
+    <div class="right">
+      <button class="add-entry-btn">＋ 新增記帳</button>
+      <div class="gold-pill">🪙 3,200</div>
+      <div class="icon-btn">⚙️</div>
+    </div>
+  </div>
+
+  <div id="d-popover" class="popover">
+    <div id="d-panel" class="slide-panel">
+      <div class="view list-view">
+        <div class="date-nav">
+          <button data-nav="-1">‹</button>
+          <span id="d-date-label-2">今天・9/28</span>
+          <button data-nav="1">›</button>
+        </div>
+        <div id="d-list" class="record-list"></div>
+      </div>
+      <div class="view edit-view">
+        <div class="edit-header">
+          <button class="back-icon" data-back="d">‹</button>
+          <span>編輯紀錄</span>
+        </div>
+        <div class="edit-body">
+          <div class="edit-cat-row">
+            <span id="d-edit-icon" class="edit-cat-icon"></span>
+            <span id="d-edit-cat"></span>
+          </div>
+          <label>金額 <input id="d-edit-amount" type="number" /></label>
+          <label>備註 <input id="d-edit-note" type="text" /></label>
+        </div>
+        <div class="edit-actions">
+          <button class="danger-btn">刪除</button>
+          <button class="primary-btn">儲存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="demo-label">📱 手機版：Bottom Sheet</div>
+<div class="phone-frame">
+  <div class="phone-header">
+    <button id="m-pill" class="date-pill">
+      <span class="pill-icon">📅</span>
+      <span class="pill-label">今天・9/28</span>
+      <span class="pill-chevron">⌄</span>
+      <span class="pill-badge">2筆 · $540</span>
+    </button>
+    <div class="icon-btn">⚙️</div>
+  </div>
+  <div class="phone-body">
+    <div style="height:240px;border:3px dashed var(--line);border-radius:24px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:12px;">史萊姆畫面</div>
+  </div>
+
+  <div id="m-overlay" class="sheet-overlay"></div>
+  <div id="m-sheet" class="sheet">
+    <div class="sheet-handle"></div>
+    <div id="m-panel" class="slide-panel">
+      <div class="view list-view">
+        <div class="date-nav">
+          <button data-nav="-1">‹</button>
+          <span id="m-date-label">今天・9/28</span>
+          <button data-nav="1">›</button>
+        </div>
+        <div id="m-list" class="record-list"></div>
+      </div>
+      <div class="view edit-view">
+        <div class="edit-header">
+          <button class="back-icon" data-back="m">‹</button>
+          <span>編輯紀錄</span>
+        </div>
+        <div class="edit-body">
+          <div class="edit-cat-row">
+            <span id="m-edit-icon" class="edit-cat-icon"></span>
+            <span id="m-edit-cat"></span>
+          </div>
+          <label>金額 <input id="m-edit-amount" type="number" /></label>
+          <label>備註 <input id="m-edit-note" type="text" /></label>
+        </div>
+        <div class="edit-actions">
+          <button class="danger-btn">刪除</button>
+          <button class="primary-btn">儲存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DATA = [
+    { date:'9/26', weekday:'週六', records:[
+      { icon:'🍱', cat:'飲食', note:'午餐', amount:180, color:'var(--accent-food)' },
+      { icon:'🚌', cat:'交通', note:'', amount:60, color:'var(--accent-exercise)' },
+    ]},
+    { date:'9/27', weekday:'週日', records:[
+      { icon:'🎉', cat:'社交', note:'朋友聚餐', amount:540, color:'var(--accent-diary)' },
+    ]},
+    { date:'9/28', weekday:'週一', records:[
+      { icon:'☕', cat:'飲食', note:'咖啡', amount:120, color:'var(--accent-food)' },
+      { icon:'📚', cat:'學習/3C', note:'', amount:420, color:'var(--accent-money)' },
+    ]},
+  ];
+  let idx = DATA.length - 1;
+
+  function label(){
+    const d = DATA[idx];
+    return idx === DATA.length - 1 ? `今天・${d.date}` : `${d.date}・${d.weekday}`;
+  }
+
+  function render(prefix){
+    const d = DATA[idx];
+    const l = label();
+    document.querySelectorAll(`#${prefix}-date-label, #${prefix}-date-label-2`).forEach(el => { if (el) el.textContent = l; });
+    const total = d.records.reduce((s, r) => s + r.amount, 0);
+    const badge = document.getElementById(`${prefix}-badge`);
+    if (badge) badge.textContent = d.records.length ? `${d.records.length}筆 · $${total.toLocaleString()}` : '無紀錄';
+
+    const list = document.getElementById(`${prefix}-list`);
+    list.innerHTML = d.records.length
+      ? d.records.map(r => `
+        <button class="record-row" data-icon="${r.icon}" data-cat="${r.cat}" data-note="${r.note}" data-amount="${r.amount}">
+          <span class="record-icon" style="color:${r.color};background:color-mix(in srgb, ${r.color} 18%, transparent)">${r.icon}</span>
+          <span class="record-info"><b>${r.cat}</b><small>${r.note || '－'}</small></span>
+          <span class="record-amount">-$${r.amount}</span>
+        </button>`).join('')
+      : `<div class="empty-state">這天還沒有記帳紀錄</div>`;
+    list.querySelectorAll('.record-row').forEach(row => {
+      row.addEventListener('click', () => openEdit(prefix, row.dataset));
+    });
+  }
+
+  function openEdit(prefix, data){
+    document.getElementById(`${prefix}-panel`).classList.add('showing-edit');
+    document.getElementById(`${prefix}-edit-icon`).textContent = data.icon;
+    document.getElementById(`${prefix}-edit-cat`).textContent = data.cat;
+    document.getElementById(`${prefix}-edit-amount`).value = data.amount;
+    document.getElementById(`${prefix}-edit-note`).value = data.note;
+  }
+  function closeEdit(prefix){
+    document.getElementById(`${prefix}-panel`).classList.remove('showing-edit');
+  }
+
+  function shiftDate(dir){
+    idx = Math.min(DATA.length - 1, Math.max(0, idx + dir));
+    render('d'); render('m');
+  }
+
+  document.querySelectorAll('[data-nav]').forEach(btn => {
+    btn.addEventListener('click', () => shiftDate(parseInt(btn.dataset.nav, 10)));
+  });
+  document.querySelectorAll('[data-back]').forEach(btn => {
+    btn.addEventListener('click', () => closeEdit(btn.dataset.back));
+  });
+
+  const dPill = document.getElementById('d-pill');
+  const dPopover = document.getElementById('d-popover');
+  dPill.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dPopover.classList.toggle('open');
+    dPill.classList.toggle('open');
+  });
+  document.addEventListener('click', (e) => {
+    if (dPopover.classList.contains('open') && !dPopover.contains(e.target) && !dPill.contains(e.target)) {
+      dPopover.classList.remove('open');
+      dPill.classList.remove('open');
+      closeEdit('d');
+    }
+  });
+
+  const mPill = document.getElementById('m-pill');
+  const mSheet = document.getElementById('m-sheet');
+  const mOverlay = document.getElementById('m-overlay');
+  mPill.addEventListener('click', () => {
+    mSheet.classList.add('open');
+    mOverlay.classList.add('open');
+  });
+  mOverlay.addEventListener('click', () => {
+    mSheet.classList.remove('open');
+    mOverlay.classList.remove('open');
+    closeEdit('m');
+  });
+
+  render('d'); render('m');
+</script>
+</body>
+</html>

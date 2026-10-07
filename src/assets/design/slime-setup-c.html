@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>培育史萊姆設定 · C 版（卡片選擇 modal）</title>
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#fffdfa;
+    --ink:#3a352f;
+    --ink-soft:#928c80;
+    --line:#eae3d7;
+    --accent-money:#c98a4b;
+    --accent-food:#e07856;
+    --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9;
+    --accent-diary:#b06a9e;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+  .note{position:fixed;top:16px;left:16px;font-size:12px;color:var(--ink-soft);background:var(--panel);padding:8px 14px;border-radius:100px;box-shadow:var(--shadow-out);z-index:10;max-width:80vw;}
+
+  .overlay{position:fixed;inset:0;background:rgba(58,53,47,.4);display:flex;overflow-y:auto;padding:40px 16px;}
+  .modal{
+    margin:auto;width:100%;max-width:560px;background:var(--panel);border-radius:24px;
+    box-shadow:0 20px 50px -12px rgba(58,53,47,.3);padding:30px 28px;position:relative;
+    opacity:0;animation:fadeUp .5s ease forwards;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .close-btn{position:absolute;top:20px;right:20px;width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);color:var(--ink-soft);box-shadow:var(--shadow-in);font-size:15px;cursor:pointer;}
+
+  h1{font-size:18px;text-align:center;margin:0 0 6px;}
+  .subtitle{font-size:12.5px;color:var(--ink-soft);text-align:center;line-height:1.6;margin:0 0 24px;padding:0 20px;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+  .card{
+    position:relative;text-align:left;padding:18px 16px;border-radius:18px;border:2px solid transparent;
+    background:var(--bg);box-shadow:var(--shadow-in);cursor:pointer;font-family:inherit;
+  }
+  .card.selected{background:var(--panel);border-color:var(--accent-money);box-shadow:var(--shadow-out);}
+  .card .badge{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--accent-money);color:#fff;font-size:11px;display:none;align-items:center;justify-content:center;}
+  .card.selected .badge{display:flex;}
+  .card .ic{font-size:22px;margin-bottom:10px;display:block;}
+  .card .label{font-size:14.5px;font-weight:800;display:block;margin-bottom:3px;}
+  .card .desc{font-size:11px;color:var(--ink-soft);line-height:1.5;}
+
+  .card.custom .custom-input{display:none;align-items:center;gap:6px;margin-top:10px;}
+  .card.custom.selected .custom-input{display:flex;}
+  .card.custom .custom-input input{width:52px;font-family:inherit;font-size:12.5px;text-align:center;border:none;border-radius:9px;padding:6px;box-shadow:var(--shadow-in);background:transparent;color:var(--ink);}
+  .card.custom .custom-input span{font-size:11px;color:var(--ink-soft);}
+
+  .summary{background:var(--bg);border-radius:14px;padding:12px 16px;text-align:center;font-size:12px;color:var(--ink-soft);margin-bottom:20px;}
+  .summary b{color:var(--ink);font-weight:800;}
+
+  .start-btn{width:100%;border:none;border-radius:15px;padding:14px;font-family:inherit;font-size:14.5px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent-money),#e0aa6f);box-shadow:var(--shadow-out);cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="note">C 版：卡片式選擇，視覺份量比 A 版重一點、比 B 版收斂，維持在 modal 裡但更有遊戲感</div>
+
+<div class="overlay">
+  <div class="modal">
+    <button class="close-btn" aria-label="關閉">✕</button>
+    <h1>培育新的史萊姆</h1>
+    <p class="subtitle">選擇這次要培育多久，期間內的記帳都會即時反映在牠的能力值上</p>
+
+    <div class="grid" id="grid">
+      <button class="card" data-days="1">
+        <span class="badge">✓</span>
+        <span class="ic">⚡</span>
+        <span class="label">1 天</span>
+        <span class="desc">快速體驗一輪培育</span>
+      </button>
+      <button class="card" data-days="7">
+        <span class="badge">✓</span>
+        <span class="ic">📅</span>
+        <span class="label">一週</span>
+        <span class="desc">標準培育節奏</span>
+      </button>
+      <button class="card" data-days="30">
+        <span class="badge">✓</span>
+        <span class="ic">🗓️</span>
+        <span class="label">一個月</span>
+        <span class="desc">長期挑戰，能力值累積更多</span>
+      </button>
+      <button class="card custom" data-days="custom">
+        <span class="badge">✓</span>
+        <span class="ic">✏️</span>
+        <span class="label">自訂天數</span>
+        <span class="desc">自己決定要培育幾天</span>
+        <span class="custom-input">
+          <input type="number" min="1" value="14" id="customInput" onclick="event.stopPropagation()" />
+          <span>天</span>
+        </span>
+      </button>
+    </div>
+
+    <div class="summary" id="summary">請選擇培育週期</div>
+
+    <button class="start-btn">開始培育</button>
+  </div>
+</div>
+
+<script>
+  const cards = document.querySelectorAll('.card');
+  const customInput = document.getElementById('customInput');
+  const summaryEl = document.getElementById('summary');
+
+  const fmt = (d) => `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+
+  function updateSummary(days) {
+    const start = new Date();
+    const end = new Date();
+    end.setDate(start.getDate() + Number(days));
+    summaryEl.innerHTML = `培育區間：<b>${fmt(start)} － ${fmt(end)}</b>（${days} 天）`;
+  }
+
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      cards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      updateSummary(card.dataset.days === 'custom' ? customInput.value : card.dataset.days);
+    });
+  });
+  customInput.addEventListener('input', () => updateSummary(customInput.value || 1));
+</script>
+</body>
+</html>
