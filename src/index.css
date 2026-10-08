@@ -11,6 +11,7 @@
   --color-accent-body: #4f9d8a;
   --color-accent-exercise: #5c86c9;
   --color-accent-diary: #b06a9e;
+  --color-danger: #c6473c;
 
   --shadow-out:
     8px 8px 18px #e8e1d4,
@@ -18,6 +19,14 @@
   --shadow-in:
     inset 4px 4px 10px #e8e1d4,
     inset -4px -4px 10px #ffffff;
+  --shadow-button:
+    0 6px 0 #22201b,
+    8px 8px 18px #e8e1d4,
+    -8px -8px 18px #ffffff;
+  --shadow-button-active:
+    0 2px 0 #22201b,
+    8px 8px 18px #e8e1d4,
+    -8px -8px 18px #ffffff;
 
   --font-sans: 'Noto Sans TC', 'PingFang TC', 'Helvetica Neue', Arial, sans-serif;
 }

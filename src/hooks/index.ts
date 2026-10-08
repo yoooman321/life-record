@@ -12,3 +12,6 @@ export * from './accounting/useSlimeStat';
 export * from './accounting/useCategoryAbility';
 export * from './accounting/useCreateSlime';
 export * from './accounting/useEditSlime';
+
+export * from './user/useLogin';
+export * from './user/useRegister';

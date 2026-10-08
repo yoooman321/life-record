@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>登入 / 註冊 · A 版（Soft Minimal 單卡切換）</title>
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#fffdfa;
+    --ink:#3a352f;
+    --ink-soft:#928c80;
+    --line:#eae3d7;
+    --accent-money:#c98a4b;
+    --accent-food:#e07856;
+    --accent-body:#4f9d8a;
+    --accent-exercise:#5c86c9;
+    --accent-diary:#b06a9e;
+    --shadow-out: 8px 8px 18px #e8e1d4, -8px -8px 18px #ffffff;
+    --shadow-in: inset 4px 4px 10px #e8e1d4, inset -4px -4px 10px #ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .note{position:fixed;top:16px;left:16px;font-size:12px;color:var(--ink-soft);background:var(--panel);padding:8px 14px;border-radius:100px;box-shadow:var(--shadow-out);z-index:10;max-width:80vw;}
+
+  .card{
+    width:100%;max-width:400px;background:var(--panel);border-radius:28px;
+    box-shadow:var(--shadow-out);padding:36px 30px;
+    opacity:0;animation:fadeUp .5s ease forwards;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  .brand{display:flex;flex-direction:column;align-items:center;margin-bottom:28px;}
+  .brand .name{font-size:19px;font-weight:800;letter-spacing:.02em;}
+  .brand .slogan{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+
+  .tabs{display:flex;background:var(--bg);border-radius:100px;padding:4px;margin-bottom:24px;box-shadow:var(--shadow-in);}
+  .tab{flex:1;border:none;background:transparent;border-radius:100px;padding:9px 0;font-family:inherit;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:all .2s ease;}
+  .tab.active{background:var(--panel);color:var(--ink);box-shadow:var(--shadow-out);}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
+  .field input{
+    width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);
+    border:none;border-radius:13px;padding:12px 14px;box-shadow:var(--shadow-in);outline:none;
+    transition:box-shadow .2s ease;
+  }
+  .field input:focus{box-shadow:0 0 0 2px var(--ink) inset;}
+
+  .confirm-field{display:none;}
+  .confirm-field.show{display:block;}
+
+  .forgot{display:flex;justify-content:flex-end;margin:-4px 0 18px;}
+  .forgot a{font-size:11.5px;color:var(--ink-soft);text-decoration:none;}
+  .forgot a:hover{color:var(--ink);}
+
+  .submit-btn{
+    width:100%;border:none;border-radius:15px;padding:14px;font-family:inherit;font-size:14.5px;font-weight:800;
+    color:#fff;background:var(--ink);box-shadow:var(--shadow-out);cursor:pointer;transition:transform .15s ease,filter .15s ease;margin-top:4px;
+  }
+  .submit-btn:hover{filter:brightness(1.15);}
+  .submit-btn:active{transform:scale(.98);}
+
+  .switch-hint{text-align:center;font-size:12px;color:var(--ink-soft);margin-top:18px;}
+  .switch-hint a{color:var(--ink);font-weight:700;text-decoration:none;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="note">A 版：Soft Minimal 單卡，拿掉史萊姆，品牌只留文字 wordmark + slogan，上方 pill tab 切換登入／註冊，最收斂、跟現有風格最一致</div>
+
+<div class="card">
+  <div class="brand">
+    <span class="name">Life Record</span>
+    <span class="slogan">生活大小事，都靠我記事</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-mode="login">登入</button>
+    <button class="tab" data-mode="register">註冊</button>
+  </div>
+
+  <div id="nameField" class="field confirm-field">
+    <label>暱稱</label>
+    <input type="text" placeholder="怎麼稱呼你" />
+  </div>
+
+  <div class="field">
+    <label>Email</label>
+    <input type="email" placeholder="you@example.com" />
+  </div>
+
+  <div class="field">
+    <label>密碼</label>
+    <input type="password" placeholder="至少 8 碼" />
+  </div>
+
+  <div id="confirmField" class="field confirm-field">
+    <label>確認密碼</label>
+    <input type="password" placeholder="再輸入一次" />
+  </div>
+
+  <div id="forgotRow" class="forgot">
+    <a href="#">忘記密碼？</a>
+  </div>
+
+  <button class="submit-btn" id="submitBtn">登入</button>
+
+  <div class="switch-hint" id="switchHint">
+    還沒有帳號？<a id="switchLink">立即註冊</a>
+  </div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const nameField = document.getElementById('nameField');
+  const confirmField = document.getElementById('confirmField');
+  const forgotRow = document.getElementById('forgotRow');
+  const submitBtn = document.getElementById('submitBtn');
+  const switchHint = document.getElementById('switchHint');
+
+  function setMode(mode) {
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    const isRegister = mode === 'register';
+    nameField.classList.toggle('show', isRegister);
+    confirmField.classList.toggle('show', isRegister);
+    forgotRow.style.visibility = isRegister ? 'hidden' : 'visible';
+    submitBtn.textContent = isRegister ? '建立帳號' : '登入';
+    switchHint.innerHTML = isRegister
+      ? '已經有帳號了？<a id="switchLink">直接登入</a>'
+      : '還沒有帳號？<a id="switchLink">立即註冊</a>';
+    document.getElementById('switchLink').addEventListener('click', () => setMode(isRegister ? 'login' : 'register'));
+  }
+
+  tabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+  document.getElementById('switchLink').addEventListener('click', () => setMode('register'));
+</script>
+</body>
+</html>
