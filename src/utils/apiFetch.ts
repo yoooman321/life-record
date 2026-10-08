@@ -97,6 +97,11 @@ export const apiClient = async <T>(
     ...headers,
   };
 
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    requestHeaders['Authorization'] = `Bearer ${token}`;
+  }
+
   // Add Content-Type if not FormData
   if (!useFormData && !headers['Content-Type']) {
     requestHeaders['Content-Type'] = 'application/json';
