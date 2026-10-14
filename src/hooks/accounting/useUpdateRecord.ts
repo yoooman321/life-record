@@ -10,6 +10,9 @@ export function useUpdateRecord() {
       queryClient.invalidateQueries({
         queryKey: [queryKeys.accounting.records],
       });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.accounting.period],
+      });
     },
   });
 }

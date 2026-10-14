@@ -1,17 +1,22 @@
-import { useCreateRecord } from '@/hooks';
 import EntryForm, { type EntryFormData } from './EntryForm';
 import { useState } from 'react';
+import type { RecordItemRead } from '@/type';
 
-type AddEntryModalProps = {
+type EntryModalProps = {
+  initialRecord?: RecordItemRead;
+  onSubmit: (data: EntryFormData, options: { onSuccess: () => void }) => void;
+  isSubmitting: boolean;
   onClose: () => void;
-  onSuccess: (id: number) => void;
+  onSuccess?: (id: number) => void;
 };
 
-export default function AddEntryModal({
+export default function EntryModal({
   onClose,
+  initialRecord,
+  isSubmitting,
+  onSubmit,
   onSuccess: onSuccessFromProps,
-}: AddEntryModalProps) {
-  const { mutate, isPending } = useCreateRecord();
+}: EntryModalProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [pendingCategoryId, setPendingCategoryId] = useState<number | null>(
     null,
@@ -20,33 +25,20 @@ export default function AddEntryModal({
     data: EntryFormData,
     options: { onSuccess: () => void },
   ) => {
-    mutate(
-      {
-        categoryId: data.categoryId,
-        amount: data.amount,
-        note: data.note,
-        expendedAt: data.expendedAt,
-        tags: data.tags,
-        image: data.image.type === 'new' ? data.image.file : null,
+    onSubmit(data, {
+      onSuccess: () => {
+        setPendingCategoryId(data.categoryId);
+        options.onSuccess();
       },
-      {
-        onSuccess: () => {
-          setPendingCategoryId(data.categoryId);
-          options.onSuccess();
-        },
-      },
-    );
+    });
   };
 
   const handleTransitionEnd = () => {
     if (!isClosing) return;
     onClose();
     if (pendingCategoryId) {
-      onSuccessFromProps(pendingCategoryId);
+      onSuccessFromProps?.(pendingCategoryId);
     }
-    // TODO：送出成功後關閉的情況，這裡要補上呼叫 onSuccessFromProps(pendingCategoryId)
-    //   還需要新增 pendingCategoryId 這個 state，並在 submitHandler 送出成功時設定它，
-    //   取代現在 submitHandler 裡用 setTimeout 延遲呼叫 onSuccessFromProps 的寫法。
   };
 
   return (
@@ -68,8 +60,9 @@ export default function AddEntryModal({
         </button>
 
         <EntryForm
+          initialRecord={initialRecord}
           onSubmit={submitHandler}
-          isPending={isPending}
+          isPending={isSubmitting}
           onSave={() => {
             setIsClosing(true);
           }}

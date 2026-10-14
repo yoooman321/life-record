@@ -88,3 +88,7 @@ export const mockEndPeriodApi = (): Promise<SlimeItem> => {
     }, 1000); // 模擬 API 要等 2 秒
   });
 };
+
+export const deleteRecord = (recordId: number): Promise<void> => {
+  return api.delete(`/accounting/record/${recordId}`);
+};

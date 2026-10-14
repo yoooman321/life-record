@@ -3,7 +3,6 @@
 //   可以參考 by-date-records-a.html 的 .slide-panel 寫法
 
 import { useDisplayRecords, useRecords, useUpdateRecord } from '@/hooks';
-import { iconMapping } from '@/config/icons';
 import { getFormattedDate, getWeekDay } from '@/utils/date';
 import { useEffect, useRef, useState } from 'react';
 import type { RecordItemRead, UpdateRecordItem } from '@/type';
@@ -193,7 +192,11 @@ export default function ByDateRecords() {
               <div className="max-h-70 overflow-y-auto p-2">
                 {displayedRecords && displayedRecords.length > 0 ? (
                   displayedRecords.map((record) => (
-                    <RecordItem record={record} key={`by-date-${record.id}`} />
+                    <RecordItem
+                      onClick={(record) => setSelectedRecord(record)}
+                      record={record}
+                      key={`by-date-${record.id}`}
+                    />
                   ))
                 ) : (
                   <div className="px-4 py-8 text-center text-xs text-ink-soft">
