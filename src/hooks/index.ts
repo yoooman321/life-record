@@ -13,6 +13,10 @@ export * from './accounting/useCategoryAbility';
 export * from './accounting/useCreateSlime';
 export * from './accounting/useEditSlime';
 export * from './accounting/useDeleteRecord';
+export * from './accounting/useDeleteCategory';
+export * from './accounting/useEditCategory';
+export * from './accounting/useCreateCategory';
+export * from './accounting/useEditCategoryOrder';
 
 export * from './user/useLogin';
 export * from './user/useRegister';

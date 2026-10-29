@@ -10,6 +10,8 @@ import type {
   PeriodItem,
   SlimeItem,
   EditSlimeItem,
+  CreateCategoryItem,
+  UpdateCategoryOrderItem,
 } from '@/type';
 import type { SlimeStatItem } from '@/type/slime';
 import { api } from '@/utils/apiFetch';
@@ -91,4 +93,25 @@ export const mockEndPeriodApi = (): Promise<SlimeItem> => {
 
 export const deleteRecord = (recordId: number): Promise<void> => {
   return api.delete(`/accounting/record/${recordId}`);
+};
+
+export const deleteCategory = (categoryId: number): Promise<void> => {
+  return api.delete(`/accounting/category/${categoryId}`);
+};
+
+export const editCategory = (body: {
+  id: number & Partial<UpdateRecordItem>;
+}): Promise<void> => {
+  const { id, ...rest } = body;
+  return api.put(`/accounting/category/${id}`, rest);
+};
+
+export const createCategory = (body: CreateCategoryItem): Promise<void> => {
+  return api.post('/accounting/category', body);
+};
+
+export const editCategoriesOrder = (
+  body: UpdateCategoryOrderItem,
+): Promise<void> => {
+  return api.put('/accounting/categories/order', body);
 };
