@@ -5,7 +5,7 @@
 //   modal 本身還沒做，先留空；桌面版能力值本來就常駐顯示在側邊 <SlimeSummary />，不需要可點擊
 //   （手機版這塊先放著，等桌面版都穩定了再回來處理）
 
-import AddEntryModal from '@/components/accounting/AddEntryModal';
+import EntryModal from '@/components/accounting/EntryModal';
 import BriefSummary from '@/components/accounting/BriefSummary';
 import SlimeSetupModal from '@/components/accounting/SlimeSetupModal';
 import SlimeStage, {
@@ -19,12 +19,14 @@ import {
   useCategoryAbility,
   useCreateSlime,
   useEditSlime,
+  useCreateRecord,
 } from '@/hooks';
 import { useRef, useState } from 'react';
+import type { EntryFormData } from '@/components/accounting/EntryForm';
 
 export default function AccountingHomePage() {
   const [showSlimeModal, setShowSlimeModal] = useState(false);
-
+  const { isPending: isSubmitting, mutate: createRecord } = useCreateRecord();
   const { data: slimeSummary } = usePeriodRecord();
   // mutate -> 呼叫後不回傳 Promise
   const { mutateAsync } = useCreateSlime();
@@ -79,6 +81,27 @@ export default function AccountingHomePage() {
     if (growNext) {
       setShowSlimeModal(true); // 開啟選擇週期畫面
     }
+  };
+
+  const onSubmit = (
+    data: EntryFormData,
+    options?: { onSuccess: () => void },
+  ) => {
+    createRecord(
+      {
+        categoryId: data.categoryId,
+        amount: data.amount,
+        note: data.note,
+        expendedAt: data.expendedAt,
+        tags: data.tags,
+        image: data.image.type === 'new' ? data.image.file : null,
+      },
+      {
+        onSuccess: () => {
+          options?.onSuccess();
+        },
+      },
+    );
   };
 
   const growingContent = slimeSummary && (
@@ -172,7 +195,9 @@ export default function AccountingHomePage() {
         />
       )}
       {openAddModal && (
-        <AddEntryModal
+        <EntryModal
+          onSubmit={onSubmit}
+          isSubmitting={isSubmitting}
           onSuccess={recordSuccessHandler}
           onClose={() => {
             setOpenAddModal(false);

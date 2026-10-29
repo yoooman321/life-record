@@ -60,3 +60,21 @@ export type EditSlimeItem = {
   id: number;
   name: string;
 };
+
+export type UpdateCategoryItem = {
+  name: string;
+  iconId: number;
+  addStatsId: number;
+};
+
+export type CreateCategoryItem = {
+  name: string;
+  iconId: number;
+  addStatsId: number;
+  type: RecordType;
+};
+
+export type UpdateCategoryOrderItem = {
+  type: RecordType;
+  categoryIds: number[];
+};

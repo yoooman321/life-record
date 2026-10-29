@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router';
+import { NavLink, Outlet } from 'react-router';
 
 const SUB_NAV = [
   { key: 'slime', label: '史萊姆', icon: '🟢', current: true },
@@ -24,7 +24,8 @@ export default function AccountingLayout() {
                 {item.icon}
               </button>
             ) : (
-              <button
+              <NavLink
+                to={item.key}
                 key={item.key}
                 type="button"
                 className={`flex w-14 flex-col items-center gap-1 rounded-[14px] py-2 text-[10px] font-bold ${
@@ -39,7 +40,7 @@ export default function AccountingLayout() {
                   {item.icon}
                 </span>
                 {item.label}
-              </button>
+              </NavLink>
             ),
           )}
         </nav>

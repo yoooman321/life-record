@@ -1,75 +1,210 @@
-// TODO：目前是靜態畫面。實際使用時要接：長按拖曳排序邏輯（可以查 dnd-kit 這類套件）、
-// 點擊分類卡片要開啟編輯（可以沿用 AddCategoryModal 改成編輯模式）、
-// 點擊「新增分類」要開啟 AddCategoryModal，這些留給你練習。
-
-const CATEGORIES = [
-  { name: '飲食', icon: '🍱', color: 'var(--color-accent-food)' },
-  { name: '交通', icon: '🚌', color: 'var(--color-accent-exercise)' },
-  { name: '社交', icon: '🎉', color: 'var(--color-accent-diary)' },
-  { name: '學習/3C', icon: '💻', color: 'var(--color-accent-money)' },
-  { name: '居家/水電', icon: '🏠', color: 'var(--color-accent-body)' },
-  { name: '收入', icon: '💵', color: 'var(--color-accent-money)' },
-  { name: '投資', icon: '📈', color: 'var(--color-accent-money)' },
-];
+import CategoryModal from '@/components/accounting/CategoryModal';
+import SortableCategoryItems from '@/components/accounting/SortableCategoryItems';
+import { useConfirm } from '@/components/ui/dialog/DialogContext';
+import {
+  useCategories,
+  useCreateCategory,
+  useDeleteCategory,
+  useEditCategory,
+  useEditCategoryOrder,
+} from '@/hooks';
+import type {
+  CategoryItem,
+  CreateCategoryItem,
+  RecordType,
+  UpdateCategoryItem,
+} from '@/type';
+import { useState } from 'react';
+import { Link } from 'react-router';
 
 export default function AccountingCategoryManagementPage() {
+  const confirm = useConfirm();
+
+  const { data: categories } = useCategories();
+  const [type, setType] = useState<RecordType>('expense');
+  const filteredCategories = categories?.filter(
+    ({ type: categoryType }) => categoryType === type,
+  );
+  const [draftCategories, setDraftCategories] = useState<CategoryItem[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<
+    CategoryItem | undefined
+  >(undefined);
+
+  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
+
+  const { mutate: editCategory } = useEditCategory();
+  const { mutate: addCategory } = useCreateCategory();
+  const { mutate: editCategoryOrder, isPending: isSavingOrder } =
+    useEditCategoryOrder();
+  const openCategoryModal = (category: CategoryItem | undefined) => {
+    setSelectedCategory(category);
+    setShowModal(true);
+  };
+  const onDelete = async (category: CategoryItem) => {
+    if (isDeleting) return;
+    const ok = await confirm({ title: '確定要刪除嗎？' });
+    if (ok) {
+      deleteCategory(category.id, {
+        onSuccess: () => {
+          setDraftCategories((prev) =>
+            prev.filter(({ id }) => id !== category.id),
+          );
+        },
+      });
+    }
+  };
+  const onClose = () => {
+    setShowModal(false);
+    setSelectedCategory(undefined);
+  };
+
+  const onSortChange = (initialIndex: number, newIndex: number) => {
+    setDraftCategories((prev) => {
+      const items = [...prev];
+      const [removed] = items.splice(initialIndex, 1);
+      items.splice(newIndex, 0, removed);
+      return items;
+    });
+  };
+
+  const onOrderSave = () => {
+    if (isSavingOrder) return;
+    const filteredCategoryIds = filteredCategories?.map(({ id }) => id);
+    const newCategoryIds = draftCategories.map(({ id }) => id);
+    if (
+      JSON.stringify(filteredCategoryIds) === JSON.stringify(newCategoryIds)
+    ) {
+      setIsEditing(false);
+      return;
+    }
+    editCategoryOrder(
+      { type, categoryIds: newCategoryIds },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+          setDraftCategories([]);
+        },
+      },
+    );
+  };
+
+  const createCategory = (category: CreateCategoryItem) => {
+    addCategory(category, {
+      onSuccess: () => {
+        setShowModal(false);
+      },
+    });
+  };
+  const editCategoryHandler = (category: Partial<UpdateCategoryItem>) => {
+    if (selectedCategory) {
+      editCategory(
+        {
+          id: selectedCategory?.id,
+          ...category,
+        },
+        {
+          onSuccess: () => {
+            setShowModal(false);
+          },
+        },
+      );
+    }
+  };
   return (
     <>
       <div className="mb-6.5 flex items-center justify-between">
-        <button
-          type="button"
+        <Link
           aria-label="返回"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-ink-soft shadow-in"
+          to="/accounting/settings"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-lg text-ink-soft transition hover:bg-line/60 active:scale-90"
         >
           ‹
-        </button>
+        </Link>
         <h1 className="text-[20px] font-bold">記帳分類</h1>
-        <button
-          type="button"
-          aria-label="新增分類"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-ink-soft shadow-in"
-        >
-          ＋
-        </button>
-      </div>
-
-      <p className="mb-5 text-center text-[13px] text-ink-soft">
-        長按拖曳以移動順序
-      </p>
-
-      <div className="rounded-[20px] bg-panel p-5.5 shadow-out">
-        <div className="grid grid-cols-4 gap-3">
-          {CATEGORIES.map((category) => (
+        <div className="flex gap-2">
+          {isEditing && (
             <button
-              key={category.name}
+              onClick={() => {
+                onOrderSave();
+              }}
               type="button"
-              className="flex flex-col items-center gap-2 rounded-[14px] p-3.5 shadow-in"
+              disabled={isSavingOrder}
+              className="flex h-9 items-center justify-center rounded-full border border-accent-body px-4 text-[13px] font-bold transition active:scale-95 text-white hover:bg-accent-body/60 bg-accent-body disabled:opacity-50"
             >
-              <span
-                className="flex h-11 w-11 items-center justify-center rounded-full text-lg"
-                style={{
-                  backgroundColor: `color-mix(in srgb, ${category.color} 15%, transparent)`,
-                }}
-              >
-                {category.icon}
-              </span>
-              <span className="text-xs font-semibold">{category.name}</span>
+              儲存
             </button>
-          ))}
+          )}
 
           <button
+            onClick={() => {
+              if (filteredCategories) {
+                setDraftCategories(isEditing ? [] : filteredCategories);
+              }
+              setIsEditing((prev) => !prev);
+            }}
             type="button"
-            className="flex flex-col items-center gap-2 rounded-[14px] border-2 border-dashed border-line p-3.5"
+            disabled={isSavingOrder}
+            className={`flex h-9 items-center justify-center rounded-full border px-4 text-[13px] font-bold transition active:scale-95 disabled:opacity-50 ${isEditing ? 'bg-danger hover:bg-danger/60 text-white border-danger' : 'hover:bg-line/60 text-ink-soft border-line'}`}
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-full text-lg text-ink-soft">
-              ＋
-            </span>
-            <span className="text-xs font-semibold text-ink-soft">
-              新增分類
-            </span>
+            {isEditing ? '取消' : '刪除/排序'}
           </button>
+          {!isEditing && (
+            <button
+              onClick={() => {
+                openCategoryModal(undefined);
+              }}
+              type="button"
+              aria-label="新增分類"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-lg text-ink-soft transition hover:bg-line/60 active:scale-90"
+            >
+              ＋
+            </button>
+          )}
         </div>
       </div>
+
+      <div className="rounded-[20px] bg-panel p-5.5 shadow-out">
+        <div className="mb-5 flex gap-1 rounded-full bg-bg p-1 shadow-in">
+          <button
+            disabled={isEditing}
+            onClick={() => setType('expense')}
+            type="button"
+            className={`flex-1 rounded-full  py-2 text-[13px] font-extrabold ${type === 'expense' ? 'text-white shadow-out bg-ink' : 'text-ink-soft'}`}
+          >
+            支出
+          </button>
+          <button
+            disabled={isEditing}
+            onClick={() => setType('income')}
+            type="button"
+            className={`flex-1 rounded-full  py-2 text-[13px] font-extrabold ${type === 'income' ? 'text-white shadow-out bg-ink' : 'text-ink-soft'}`}
+          >
+            收入
+          </button>
+        </div>
+
+        {filteredCategories && (
+          <SortableCategoryItems
+            onDelete={onDelete}
+            setItems={onSortChange}
+            items={isEditing ? draftCategories : filteredCategories}
+            isEditing={isEditing}
+            openCategoryModal={openCategoryModal}
+          />
+        )}
+      </div>
+
+      {showModal && (
+        <CategoryModal
+          onCreate={createCategory}
+          onEdit={editCategoryHandler}
+          initialData={selectedCategory}
+          onClose={onClose}
+          defaultType={type}
+        />
+      )}
     </>
   );
 }

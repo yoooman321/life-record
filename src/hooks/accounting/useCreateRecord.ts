@@ -10,6 +10,9 @@ export function useCreateRecord() {
       queryClient.invalidateQueries({
         queryKey: [queryKeys.accounting.period],
       });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.accounting.records],
+      });
     },
   });
 }

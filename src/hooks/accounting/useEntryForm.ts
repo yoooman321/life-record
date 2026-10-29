@@ -9,7 +9,7 @@ type UseEntryFormProps = {
 
 const getDefaultValues = (initialRecord: RecordItemRead | undefined) => {
   return {
-    selectedCategory: initialRecord?.categoryId || null,
+    selectedCategory: initialRecord?.category.id || null,
     type: initialRecord?.recordType || 'expense',
     amount: initialRecord?.amount || '',
     note: initialRecord?.note || '',

@@ -10,6 +10,8 @@ import type {
   PeriodItem,
   SlimeItem,
   EditSlimeItem,
+  CreateCategoryItem,
+  UpdateCategoryOrderItem,
 } from '@/type';
 import type { SlimeStatItem } from '@/type/slime';
 import { api } from '@/utils/apiFetch';
@@ -77,14 +79,27 @@ export const editSlime = async (body: EditSlimeItem): Promise<SlimeItem> => {
   return api.put('/accounting/slime', body);
 };
 
-export const mockEndPeriodApi = (): Promise<SlimeItem> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: 1,
-        profession: 'thief',
-        name: '戰士史萊姆',
-      }); // 或隨機挑一個職業，方便測試不同結果
-    }, 1000); // 模擬 API 要等 2 秒
-  });
+export const deleteRecord = (recordId: number): Promise<void> => {
+  return api.delete(`/accounting/record/${recordId}`);
+};
+
+export const deleteCategory = (categoryId: number): Promise<void> => {
+  return api.delete(`/accounting/category/${categoryId}`);
+};
+
+export const editCategory = (body: {
+  id: number & Partial<UpdateRecordItem>;
+}): Promise<void> => {
+  const { id, ...rest } = body;
+  return api.put(`/accounting/category/${id}`, rest);
+};
+
+export const createCategory = (body: CreateCategoryItem): Promise<void> => {
+  return api.post('/accounting/category', body);
+};
+
+export const editCategoriesOrder = (
+  body: UpdateCategoryOrderItem,
+): Promise<void> => {
+  return api.put('/accounting/categories/order', body);
 };

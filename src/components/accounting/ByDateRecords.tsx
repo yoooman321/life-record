@@ -2,8 +2,7 @@
 // - list view / edit view 切換目前是直接互換，沒有 push/pop 的滑動轉場，
 //   可以參考 by-date-records-a.html 的 .slide-panel 寫法
 
-import { useDisplayRecords, useRecords, useUpdateRecord } from '@/hooks';
-import { iconMapping } from '@/config/icons';
+import { useRecords, useUpdateRecord } from '@/hooks';
 import { getFormattedDate, getWeekDay } from '@/utils/date';
 import { useEffect, useRef, useState } from 'react';
 import type { RecordItemRead, UpdateRecordItem } from '@/type';
@@ -30,8 +29,6 @@ export default function ByDateRecords() {
     startedAt: currentDate,
     endedAt: currentDate,
   });
-
-  const { displayedRecords } = useDisplayRecords({ records: records || [] });
 
   const total =
     records?.reduce((sum, r) => {
@@ -82,7 +79,7 @@ export default function ByDateRecords() {
   ) => {
     if (!selectedRecord) return;
     const body: UpdateRecordItem = { id: selectedRecord.id };
-    if (data.categoryId !== selectedRecord?.categoryId) {
+    if (data.categoryId !== selectedRecord?.category.id) {
       body.categoryId = data.categoryId;
     }
     if (data.amount !== selectedRecord.amount) {
@@ -132,9 +129,9 @@ export default function ByDateRecords() {
           {currentDate}・{getWeekDay(currentDate)}
         </span>
         <span className="text-[10px] text-ink-soft">⌄</span>
-        {displayedRecords && displayedRecords.length > 0 && (
+        {records && records.length > 0 && (
           <span className="ml-1 rounded-full bg-accent-money/14 px-2 py-0.5 text-[11px] font-bold text-accent-money">
-            {displayedRecords.length}筆 ·{' '}
+            {records.length}筆 ·{' '}
             <span
               className={total > 0 ? 'text-accent-body' : 'text-accent-food'}
             >
@@ -191,9 +188,13 @@ export default function ByDateRecords() {
               </div>
 
               <div className="max-h-70 overflow-y-auto p-2">
-                {displayedRecords && displayedRecords.length > 0 ? (
-                  displayedRecords.map((record) => (
-                    <RecordItem record={record} key={`by-date-${record.id}`} />
+                {records && records.length > 0 ? (
+                  records.map((record) => (
+                    <RecordItem
+                      onClick={(record) => setSelectedRecord(record)}
+                      record={record}
+                      key={`by-date-${record.id}`}
+                    />
                   ))
                 ) : (
                   <div className="px-4 py-8 text-center text-xs text-ink-soft">

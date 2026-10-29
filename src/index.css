@@ -35,3 +35,57 @@ body {
   margin: 0;
   @apply bg-bg text-ink;
 }
+
+@keyframes slide-in {
+  0% {
+    transform: translateX(-24px);
+    opacity: 0%
+  }
+  20% {
+    opacity: 100%;
+
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 100%;
+  }
+}
+@keyframes slide-out {
+  0% {
+    transform: translateX(0%);
+    opacity: 100%;
+  }
+  20% {
+    opacity: 0%
+
+  }
+  100% {
+    transform: translateX(-24px);
+    opacity: 0%
+  }
+}
+::view-transition-old(settings-outlet) {
+  animation: slide-out 0.25s ease forwards;
+}
+::view-transition-new(settings-outlet) {
+  animation: slide-in 0.25s ease forwards;
+}
+
+@keyframes jiggle {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+.jiggle {
+  animation: jiggle 0.25s ease-in-out infinite;
+}
+
+.jiggle:nth-child(even) {
+  animation-direction: reverse;
+  animation-delay: -0.075s;
+}
