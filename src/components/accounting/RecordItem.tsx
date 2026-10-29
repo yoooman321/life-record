@@ -1,12 +1,13 @@
-import { useDeleteRecord, type DisplayedRecord } from '@/hooks';
+import { useDeleteRecord } from '@/hooks';
 import SwipeableRow from './SwipeableRow';
 import { iconMapping } from '@/config/icons';
 import { useState } from 'react';
 import { useConfirm } from '../ui/dialog/DialogContext';
+import type { RecordItemRead } from '@/type';
 
 type RecordItemProps = {
-  record: DisplayedRecord;
-  onClick: (record: DisplayedRecord) => void;
+  record: RecordItemRead;
+  onClick: (record: RecordItemRead) => void;
 };
 
 export default function RecordItem({ record, onClick }: RecordItemProps) {

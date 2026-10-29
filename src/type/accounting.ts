@@ -21,18 +21,27 @@ export interface TagItem {
   color: string;
 }
 
+export interface RecordCategoryData {
+  color: string;
+  iconId: number;
+  name: string;
+  id: number;
+  type: RecordType;
+}
+
 export interface RecordItemRead {
   id: number;
-  categoryId: number;
   recordType: RecordType;
   amount: number;
   note?: string;
   expendedAt: string;
   tags?: number[];
+  iconId: number;
   image?: {
     url: string;
     name: string;
   };
+  category: RecordCategoryData;
 }
 
 export interface RecordItem {

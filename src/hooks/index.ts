@@ -5,7 +5,6 @@ export * from './accounting/useCreateTag';
 export * from './accounting/useCreateRecord';
 export * from './accounting/useRecords';
 export * from './accounting/useUpdateRecord';
-export * from './accounting/useDisplayRecords';
 export * from './accounting/useCreatePeriod';
 export * from './accounting/usePeriodRecord';
 export * from './accounting/useSlimeStat';
